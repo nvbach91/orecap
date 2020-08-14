@@ -17,7 +17,7 @@ import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd';
 import SettingsIcon from '@material-ui/icons/Settings';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import green from '@material-ui/core/colors/green';
 
 import axios from 'axios';
@@ -33,6 +33,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Chip from '@material-ui/core/Chip';
+import Skeleton from '@material-ui/lab/Skeleton';
 
 const useStyles = makeStyles((theme) => ({
   versionCard: {
@@ -51,6 +52,9 @@ const useStyles = makeStyles((theme) => ({
   },
   statementCard: {
     marginBottom: 2,
+  },
+  skeleton: {
+    height: 200,
   },
 }));
 
@@ -80,7 +84,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
         setVocabData(vocabResp.data);
         const ontologyFileURL = [...vocabResp.data.versions].sort((a, b) => new Date(b.issued) - new Date(a.issued))[0].fileURL;
         setVocabDownloadUrl(ontologyFileURL);
-        const fcpResp = await axios.get(`${fcpApiUrl}?iris=${ontologyFileURL}`);
+        const fcpResp = await axios.get(`${fcpApiUrl}?iris=${ontologyFileURL}&selectedClasses=${encodeURIComponent(Object.keys(selectedConcepts).join(','))}`);
         getWeightValues().forEach((v, index) => {
           if (!fcpResp.data[ontologyFileURL][`v${index + 1}`]) {
             fcpResp.data[ontologyFileURL][`v${index + 1}`] = [];
@@ -173,7 +177,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
   return (
     <Dialog fullWidth={true} maxWidth="md" open={!!vocabPrefix} onClose={handleClose}>
       <div ref={_copyCanvas}></div>
-      {loading ? <DialogContent><CircularProgress /></DialogContent> :
+      {loading ? <DialogContent><Skeleton className={classes.skeleton} /><LinearProgress /></DialogContent> :
         !vocabData ? <></> : <>
           <DialogTitle>
             <div className={classes.dialogTitle}><strong>{vocabData.prefix}:</strong> {vocabData.titles.filter((t) => t.lang === 'en')[0].value} <Avatar src={rdfIconUrl} /></div>

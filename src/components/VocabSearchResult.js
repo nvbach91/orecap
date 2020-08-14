@@ -15,7 +15,8 @@ import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import { lovApiBaseUrl } from '../config';
 import { getMatchedConceptMetadata } from '../utils';
 import axios from 'axios';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Skeleton from '@material-ui/lab/Skeleton';
 
 const useStyles = makeStyles({
   card: {
@@ -47,6 +48,9 @@ const useStyles = makeStyles({
     marginRight: 5,
     marginBottom: 2,
   },
+  skeleton: {
+    height: 150,
+  },
 });
 
 export default function VocabSearchResult({ vocabPrefix, onOpenDetails, matchedConcepts, keywordResults, selectedConcepts, handleSetSelectedConcept, focusedKeywords }) {
@@ -64,8 +68,8 @@ export default function VocabSearchResult({ vocabPrefix, onOpenDetails, matchedC
   return (
     <Grid item xs={12} md={6}>
       <Card className={classes.card}>
-        {loading ? <CircularProgress /> : !data ? <ReportProblemIcon /> :
-          <CardContent className={classes.cardContent}>
+        <CardContent className={classes.cardContent}>
+          {loading ? <><Skeleton className={classes.skeleton} /><LinearProgress /></> : !data ? <ReportProblemIcon /> : <>
             <Typography variant="h5">
               <strong>{data.prefix}</strong>: {data.titles.filter((t) => t.lang === 'en')[0].value}
             </Typography>
@@ -95,7 +99,7 @@ export default function VocabSearchResult({ vocabPrefix, onOpenDetails, matchedC
               })}
             </div>
             <br />
-            {!matchedConcepts ? <></> : <div><Typography variant="body2">Select your focus classes</Typography>
+            {!matchedConcepts ? <></> : <div><Typography variant="body2">(Un)select your focus classes</Typography>
               {Object.keys(matchedConcepts).map((uri) => {
                 const { label, description, prefixedName } = getMatchedConceptMetadata(matchedConcepts[uri]);
                 return <Chip
@@ -118,7 +122,8 @@ export default function VocabSearchResult({ vocabPrefix, onOpenDetails, matchedC
               style={{ float: 'right' }}>
               Calculate FCP
             </Button>
-          </CardContent>}
+          </>}
+        </CardContent>
       </Card>
     </Grid>
   );
