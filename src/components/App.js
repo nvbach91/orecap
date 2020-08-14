@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import IconButton from "@material-ui/core/IconButton";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
+import Button from '@material-ui/core/Button';
 import SearchIcon from '@material-ui/icons/Search';
 import Header from './Header';
 import VocabDetailsDialog from './VocabDetailsDialog';
@@ -13,7 +14,9 @@ import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import axios from 'axios';
 import { lovApiBaseUrl } from '../config';
-import SearchResult from './SearchResult';
+import SettingsDialog from './SettingsDialog';
+import VocabSearchResult from './VocabSearchResult';
+import SavedOntologiesDialog from './SavedOntologiesDialog';
 import { withMainContext } from '../context/MainContext';
 
 import Snackbar from '@material-ui/core/Snackbar';
@@ -28,64 +31,198 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const App = withMainContext(({ context }) => {
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedVocab, setSelectedVocab] = useState(null);
+  const [vocabPrefixes, setVocabPrefixes] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');//useState('transfer route organization stop servicestop');
+  const [focusedSearchQuery, setFocusedSearchQuery] = useState('');//useState('transfer');
+  const [selectedVocabPrefix, setSelectedVocabPrefix] = useState('');
   const [loading, setLoading] = useState(false);
+  const [matchedConcepts, setMatchedConcepts] = useState({});
+  const [keywordResults, setKeywordResults] = useState({});
+  const [selectedConcepts, setSelectedConcepts] = useState({});
+  const _submitButton = useRef();
   const classes = useStyles();
   const fetchSearchResults = async (e) => {
     e && e.preventDefault();
-    if (!searchQuery.trim()) return;
+    if (!focusedSearchQuery.trim() || !searchQuery.trim()) return;
     setLoading(true);
-    const resp = await axios.get(`${lovApiBaseUrl}/api/v2/vocabulary/search?q=${searchQuery.trim()}`);
-    setSearchResults(resp.data.results);
+    setVocabPrefixes([]);
+    setMatchedConcepts({});
+    setKeywordResults({});
+    setSelectedConcepts({});
+    const vocabsPrefixSet = {};
+    const keywords = [...new Set(searchQuery.trim().split(/[\s,]+/))];
+    const mc = {};
+    const kr = {};
+    for (let i = 0; i < keywords.length; i++) {
+      const keyword = keywords[i];
+      const keywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?type=class&q=${keyword}`);
+      keywordResp.data.results.filter((result) => {
+        return result.type === 'class';
+      }).forEach((result) => {
+        const prefixedName = result.prefixedName.join('');
+        const highlight = result.highlight;
+        const uri = result.uri.join('');
+        result['vocabulary.prefix'].forEach((prefix) => {
+          vocabsPrefixSet[prefix] = true;
+          if (!mc[prefix]) {
+            mc[prefix] = { [uri]: { prefixedName, highlight } };
+          } else {
+            mc[prefix][uri] = { prefixedName, highlight };
+          }
+          if (!kr[prefix]) {
+            kr[prefix] = { [keyword]: { [uri]: true } };
+          } else {
+            if (!kr[prefix][keyword]) {
+              kr[prefix][keyword] = { [uri]: true };
+            }
+          }
+        });
+      });
+    }
+    // Object.keys(kr).forEach((prefix) => {
+    //   keywords.forEach((kw) => {
+    //     if (!kr[prefix][kw]) {
+    //       kr[prefix][kw] = {};
+    //     }
+    //   });
+    // });
+
+    const focusedKeywords = [...new Set(focusedSearchQuery.trim().split(/[\s,]+/))];
+    const fmc = {};
+    for (let i = 0; i < focusedKeywords.length; i++) {
+      const focusedKeywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?type=class&q=${focusedKeywords[i]}`);
+      focusedKeywordResp.data.results.forEach((result) => {
+        const prefixedName = result.prefixedName.join('');
+        const highlight = result.highlight;
+        const uri = result.uri.join('');
+        result['vocabulary.prefix'].forEach((prefix) => {
+          if (fmc[prefix]) {
+            fmc[prefix][uri] = { prefixedName, highlight };
+          } else {
+            fmc[prefix] = { [uri]: { prefixedName, highlight } };
+          }
+        });
+      });
+    }
+
+    const newSelectedConcepts = {};
+    Object.keys(fmc).forEach((prefix) => {
+      if (mc[prefix]) {
+        newSelectedConcepts[prefix] = {};
+        Object.keys(fmc[prefix]).forEach((focusedUri) => {
+          if (mc[prefix][focusedUri]) {
+            newSelectedConcepts[prefix][focusedUri] = true;
+          }
+        });
+      }
+    });
+    setSelectedConcepts(newSelectedConcepts);
+
+    setMatchedConcepts(mc);
+    setKeywordResults(kr);
+    const sortedVocabPrefixes = Object.keys(vocabsPrefixSet).sort((prefix1, prefix2) => {
+      const c1 = Object.keys(newSelectedConcepts[prefix1] || {}).length;
+      const c2 = Object.keys(newSelectedConcepts[prefix2] || {}).length;
+      let k1 = 0;
+      Object.keys(kr[prefix1] || {}).forEach((k) => {
+        k1 += Object.keys(kr[prefix1][k]).length;
+      });
+      let k2 = 0;
+      Object.keys(kr[prefix2] || {}).forEach((k) => {
+        k2 += Object.keys(kr[prefix2][k]).length;
+      });
+      if (c2 > c1) {
+        return 1;
+      }
+      if (c2 < c1) {
+        return -1;
+      }
+      if (k2 > k1) {
+        return 1;
+      }
+      if (k2 < k1) {
+        return -1;
+      }
+      return 0;
+    });
+    setVocabPrefixes(sortedVocabPrefixes);
     setLoading(false);
   };
-  const openDetailsDialog = (vocab) => () => {
-    setSelectedVocab(vocab);
-  };
   const handleSectionClick = (keyword) => () => {
-    if (keyword !== searchQuery) {
-      setLoading(true);
-      setSearchQuery(keyword);
+    if (!searchQuery.split(/\s+/).map((s) => s.toLowerCase()).includes(keyword.toLowerCase())) {
+      setSearchQuery(`${searchQuery} ${keyword}`);
+      _submitButton.current.click();
     }
   };
-  useEffect(() => {
-    const timeout = setTimeout(() => fetchSearchResults(), 500);
-    return () => { clearTimeout(timeout); };
-  }, [searchQuery]);
+  // useEffect(() => {
+  //   const timeout = setTimeout(() => fetchSearchResults(), 500);
+  //   return () => { clearTimeout(timeout); };
+  // }, [searchQuery]);
+  const handleSetSelectedConcept = (vocabPrefix) => (uri) => () => {
+    const newSelectedConcepts = { ...selectedConcepts };
+    if (newSelectedConcepts[vocabPrefix]) {
+      if (newSelectedConcepts[vocabPrefix][uri]) {
+        delete newSelectedConcepts[vocabPrefix][uri];
+      } else {
+        newSelectedConcepts[vocabPrefix][uri] = true;
+      }
+    } else {
+      newSelectedConcepts[vocabPrefix] = { [uri]: true };
+    }
+    setSelectedConcepts(newSelectedConcepts);
+  };
   return (
     <React.Fragment>
       <CssBaseline />
       <Container maxWidth="lg">
         <Header onSectionClick={handleSectionClick} />
-        <main>
-          <form className={classes.form} onSubmit={fetchSearchResults}>
-            <TextField variant="outlined" margin="normal" required fullWidth label="Search for ontologies using keywords" name="keywords"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment>
-                    {loading ? <CircularProgress /> :
-                      <IconButton type="submit">
-                        <SearchIcon />
-                      </IconButton>}
-                  </InputAdornment>
-                )
-              }}
-            />
-          </form>
+        <form className={classes.form} onSubmit={fetchSearchResults}>
           <Grid container spacing={2}>
-            {searchResults.map((item) => (
-              <SearchResult key={item._id} item={item} onOpenDetails={openDetailsDialog(item)}/>
-            ))}
+            <Grid item xs={3}>
+              <TextField variant="outlined" margin="normal" required fullWidth label="Focused class keywords" name="keywords"
+                value={focusedSearchQuery}
+                onChange={e => setFocusedSearchQuery(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={8}>
+              <TextField variant="outlined" margin="normal" required fullWidth label="Free keywords" name="keywords"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                InputProps={{
+                  endAdornment: <InputAdornment>{loading ? <CircularProgress /> : <IconButton type="submit"><SearchIcon /></IconButton>}</InputAdornment>
+                }}
+              />
+            </Grid>
+            <Grid item xs={1} style={{ display: 'flex' }}>
+              <Button buttonRef={_submitButton} size="large" color="primary" type="submit">Search</Button>
+            </Grid>
           </Grid>
-        </main>
+        </form>
+        <Grid container spacing={2}>
+          {vocabPrefixes.map((vocabPrefix) => {
+            return (
+              <VocabSearchResult
+                key={vocabPrefix}
+                vocabPrefix={vocabPrefix}
+                onOpenDetails={() => setSelectedVocabPrefix(vocabPrefix)}
+                matchedConcepts={matchedConcepts[vocabPrefix]}
+                keywordResults={keywordResults[vocabPrefix]}
+                focusedKeywords={[...new Set(focusedSearchQuery.split(/\s+/))]}
+                keywords={searchQuery.split(/\s+/)}
+                selectedConcepts={selectedConcepts[vocabPrefix]}
+                handleSetSelectedConcept={handleSetSelectedConcept(vocabPrefix)} />
+            )
+          })}
+        </Grid>
       </Container>
-      <Footer/>
-      <VocabDetailsDialog vocab={selectedVocab} handleClose={() => setSelectedVocab(null)} />
-      
+      <Footer />
+      <VocabDetailsDialog
+        vocabPrefix={selectedVocabPrefix}
+        handleClose={() => setSelectedVocabPrefix('')}
+        selectedConcepts={selectedConcepts[selectedVocabPrefix]}
+        matchedConcepts={matchedConcepts[selectedVocabPrefix]} />
+      <SettingsDialog selectedVocabPrefix={selectedVocabPrefix} />
+      <SavedOntologiesDialog setSelectedVocabPrefix={setSelectedVocabPrefix} />
       <Snackbar open={!!context.snackBarContent} autoHideDuration={5000} onClose={() => context.setSnackBarContent('')}>
         <Alert onClose={() => context.setSnackBarContent('')} severity="success">{context.snackBarContent}</Alert>
       </Snackbar>
