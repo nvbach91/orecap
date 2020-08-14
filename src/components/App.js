@@ -50,7 +50,7 @@ const App = withMainContext(({ context }) => {
     setKeywordResults({});
     setSelectedConcepts({});
     const vocabsPrefixSet = {};
-    const keywords = [...new Set(searchQuery.trim().split(/[\s,]+/))];
+    const keywords = [...new Set(`${searchQuery.trim()} ${focusedSearchQuery.trim()}`.split(/[\s,]+/))];
     const mc = {};
     const kr = {};
     for (let i = 0; i < keywords.length; i++) {
