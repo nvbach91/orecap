@@ -5,7 +5,7 @@ FCP Front-end
 https://fcp.vse.cz/fcp-demo
 
 ## Back-end
-https://github.com/corei5/FCP_api
+https://github.com/nvbach91/fcp-api
 
 ## Dev
 
