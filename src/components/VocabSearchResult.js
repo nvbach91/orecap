@@ -24,6 +24,10 @@ import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import { withMainContext } from '../context/MainContext';
 
 const useStyles = makeStyles({
+  row: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
   card: {
     display: 'flex',
   },
@@ -88,14 +92,6 @@ const VocabSearchResult = withMainContext(({ context, vocabPrefix, onOpenDetails
                   <Link href={data.uri} target="_blank">{data.uri}</Link>
                 </Typography>
               </div>
-              {context.savedOntologies[data.prefix] ?
-                <div>
-                  <Chip className={classes.chip} label={`FCP Score: ${context.savedOntologies[data.prefix].fcpScore}`} color="primary" 
-                    style={{backgroundColor: green[500]}} avatar={<Avatar><VerifiedUserIcon style={{backgroundColor: green[500]}}/></Avatar>} onClick={onOpenDetails} />
-                  <IconButton color="secondary" variant="contained" onClick={() => context.removeSavedOntology(data.prefix)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </div> : <></>}
             </div>
             {/* <div className={classes.cardDetails}>
             <Typography variant="body2" paragraph className={classes.cardDescription}>
@@ -135,15 +131,25 @@ const VocabSearchResult = withMainContext(({ context, vocabPrefix, onOpenDetails
               })}
             </div>}
             <br />
-            <Button
-              startIcon={<MemoryIcon />}
-              variant="contained"
-              color="primary"
-              onClick={onOpenDetails}
-              disabled={!selectedConcepts || !Object.keys(selectedConcepts).length}
-              style={{ float: 'right' }}>
-              Calculate FCP
-            </Button>
+            <div className={classes.row}>
+              {context.savedOntologies[data.prefix] ?
+                <div>
+                  <Chip className={classes.chip} label={`FCP Score: ${context.savedOntologies[data.prefix].fcpScore}`} color="primary" 
+                    style={{backgroundColor: green[500]}} avatar={<Avatar><VerifiedUserIcon style={{backgroundColor: green[500]}}/></Avatar>} onClick={onOpenDetails} />
+                  <IconButton color="secondary" variant="contained" onClick={() => context.removeSavedOntology(data.prefix)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </div> : <></>}
+              <Button
+                startIcon={<MemoryIcon />}
+                variant={context.savedOntologies[data.prefix] ? 'text' : 'contained'}
+                color="primary"
+                onClick={onOpenDetails}
+                disabled={!selectedConcepts || !Object.keys(selectedConcepts).length}
+                style={{ float: 'right' }}>
+                Calculate FCP
+              </Button>
+            </div>
           </>}
         </CardContent>
       </Card>

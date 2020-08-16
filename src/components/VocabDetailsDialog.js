@@ -99,6 +99,19 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
         });
         setFcpData(fcpResp.data);
         setFcpLoading(false);
+        context.addSavedOntology({
+          vocabData: vocabResp.data,
+          vocabDownloadUrl: ontologyFileURL,
+          fcpData: fcpResp.data,
+          weights: getWeightValues(),
+          fcpScore: calculateTotalFcpScore({
+            vocabDownloadUrl: ontologyFileURL,
+            fcpData: fcpResp.data,
+            weights: getWeightValues(),
+            selectedConcepts,
+            categoryTypes: getCategoryTypes({ fcpData: fcpResp.data, vocabDownloadUrl: ontologyFileURL })
+          })
+        });
       } catch (e) {
         console.error(e);
         if (e.response && e.response.data) {
@@ -252,7 +265,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
           <>
             <Chip color="secondary" label="Failed to calculate FCP, please try again later" className={classes.chip} avatar={<Avatar><ReportProblemIcon /></Avatar>} />
             <br />
-            <Typography color="secondary" variant="body2">{errorMessage}</Typography>
+            <Typography color="secondary" variant="body2">Error message: {errorMessage}</Typography>
           </>
         )}
       </DialogContent>
