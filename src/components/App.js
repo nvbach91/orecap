@@ -17,6 +17,7 @@ import { lovApiBaseUrl } from '../config';
 import SettingsDialog from './SettingsDialog';
 import VocabSearchResult from './VocabSearchResult';
 import SavedOntologiesDialog from './SavedOntologiesDialog';
+import ConfirmDialog from './ConfirmDialog';
 import { withMainContext } from '../context/MainContext';
 
 import Snackbar from '@material-ui/core/Snackbar';
@@ -39,11 +40,21 @@ const App = withMainContext(({ context }) => {
   const [matchedConcepts, setMatchedConcepts] = useState({});
   const [keywordResults, setKeywordResults] = useState({});
   const [selectedConcepts, setSelectedConcepts] = useState({});
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const _submitButton = useRef();
   const classes = useStyles();
-  const fetchSearchResults = async (e) => {
+  const handleFetchSearchResults = (e) => {
     e && e.preventDefault();
-    if (!focusedSearchQuery.trim() || !searchQuery.trim()) return;
+    if (!focusedSearchQuery.trim()) {
+      return;
+    }
+    if (!Object.keys(context.savedOntologies).length) {
+      return fetchSearchResults();
+    }
+    setConfirmOpen(true);
+  }
+  const fetchSearchResults = async () => {
+    context.resetSavedOntologies();
     setLoading(true);
     setVocabPrefixes([]);
     setMatchedConcepts({});
@@ -55,6 +66,9 @@ const App = withMainContext(({ context }) => {
     const kr = {};
     for (let i = 0; i < keywords.length; i++) {
       const keyword = keywords[i];
+      if (!keyword) {
+        continue;
+      }
       const keywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?type=class&q=${keyword}`);
       keywordResp.data.results.filter((result) => {
         return result.type === 'class';
@@ -176,16 +190,16 @@ const App = withMainContext(({ context }) => {
       <CssBaseline />
       <Container maxWidth="lg">
         <Header onSectionClick={handleSectionClick} />
-        <form className={classes.form} onSubmit={fetchSearchResults}>
+        <form className={classes.form} onSubmit={handleFetchSearchResults}>
           <Grid container spacing={2}>
-            <Grid item xs={3}>
+            <Grid item xs={4}>
               <TextField variant="outlined" margin="normal" required fullWidth label="Focused class keywords" name="keywords"
                 value={focusedSearchQuery}
                 onChange={e => setFocusedSearchQuery(e.target.value)}
               />
             </Grid>
-            <Grid item xs={8}>
-              <TextField variant="outlined" margin="normal" required fullWidth label="Free keywords" name="keywords"
+            <Grid item xs={6}>
+              <TextField variant="outlined" margin="normal" fullWidth label="Additional keywords" name="keywords"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 InputProps={{
@@ -193,11 +207,14 @@ const App = withMainContext(({ context }) => {
                 }}
               />
             </Grid>
-            <Grid item xs={1} style={{ display: 'flex' }}>
-              <Button buttonRef={_submitButton} size="large" color="primary" type="submit">Search</Button>
+            <Grid item xs={2} style={{ display: 'flex' }}>
+              <Button style={{ flexGrow: 1, height: 54, marginTop: 16 }} buttonRef={_submitButton} size="large" color="primary" type="submit">Search</Button>
             </Grid>
           </Grid>
         </form>
+        <ConfirmDialog title="New search?" open={confirmOpen} setOpen={setConfirmOpen} onConfirm={fetchSearchResults}>
+          By making a new search, the list of saved ontologies will reset. Do you want to continue?
+        </ConfirmDialog>
         <Grid container spacing={2}>
           {vocabPrefixes.map((vocabPrefix) => {
             return (

@@ -7,13 +7,17 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import IconButton from '@material-ui/core/IconButton';
-import VisibilityIcon from '@material-ui/icons/Visibility';
+import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import DeleteIcon from '@material-ui/icons/Delete';
 import Typography from '@material-ui/core/Typography';
+import Avatar from '@material-ui/core/Avatar';
+import Chip from '@material-ui/core/Chip';
 import { withMainContext } from '../context/MainContext';
 import CardContent from '@material-ui/core/CardContent';
 import Card from '@material-ui/core/Card';
 import { Link } from '@material-ui/core';
+import green from '@material-ui/core/colors/green';
 
 const useStyles = makeStyles((theme) => ({
   section: {
@@ -46,17 +50,18 @@ const SavedOntologiesDialog = withMainContext(({ context, setSelectedVocabPrefix
               <CardContent>
                 <Grid container spacing={2}>
                   <Grid item xs={3}>
-                    <Typography variant="h5">{fcpScore}</Typography>
-                    <IconButton color="primary" onClick={() => setSelectedVocabPrefix(prefix)} title={'Show FCP calculation'}>
-                      <VisibilityIcon />
+                    <Chip className={classes.chip} label={`FCP Score: ${fcpScore}`} title="Show FCP calculation" color="primary" 
+                      style={{backgroundColor: green[500]}} avatar={<Avatar><VerifiedUserIcon style={{backgroundColor: green[500]}} /></Avatar>} onClick={() => setSelectedVocabPrefix(prefix)} />
+                    <IconButton color="secondary" variant="contained" onClick={() => context.removeSavedOntology(prefix)}>
+                      <DeleteIcon />
                     </IconButton>
                   </Grid>
-                  <Grid item xs={9}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="h5">{vocabData.titles.filter((t) => t.lang === 'en')[0].value}</Typography>
-                      <Button color="primary" variant="contained" target="_blank" href={vocabDownloadUrl} endIcon={<CloudDownloadIcon />}>Download RDF</Button>
-                    </div>
+                  <Grid item xs={6}>
+                    <Typography variant="h5">{vocabData.titles.filter((t) => t.lang === 'en')[0].value}</Typography>
                     <Typography variant="body2"><Link target="_blank" href={vocabData.uri}>{vocabData.uri}</Link></Typography>
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Button color="primary" variant="contained" target="_blank" href={vocabDownloadUrl} title={vocabDownloadUrl} endIcon={<CloudDownloadIcon />}>Download RDF</Button>
                   </Grid>
                 </Grid>
               </CardContent>

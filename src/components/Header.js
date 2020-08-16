@@ -6,8 +6,8 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import ViewListIcon from '@material-ui/icons/ViewList';
 import Typography from '@material-ui/core/Typography';
 import Badge from '@material-ui/core/Badge';
-import Link from '@material-ui/core/Link';
 import { withMainContext } from '../context/MainContext';
+import CenterFocusStrongIcon from '@material-ui/icons/CenterFocusStrong';
 
 const useStyles = makeStyles((theme) => ({
   toolbar: {
@@ -27,18 +27,18 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const sections = [
-  { title: 'Technology', url: '#' },
-  { title: 'Design', url: '#' },
-  { title: 'Culture', url: '#' },
-  { title: 'Business', url: '#' },
-  { title: 'Politics', url: '#' },
-  { title: 'Opinion', url: '#' },
-  { title: 'Science', url: '#' },
-  { title: 'Health', url: '#' },
-  { title: 'Style', url: '#' },
-  { title: 'Travel', url: '#' },
-];
+// const sections = [
+//   { title: 'Technology', url: '#' },
+//   { title: 'Design', url: '#' },
+//   { title: 'Culture', url: '#' },
+//   { title: 'Business', url: '#' },
+//   { title: 'Politics', url: '#' },
+//   { title: 'Opinion', url: '#' },
+//   { title: 'Science', url: '#' },
+//   { title: 'Health', url: '#' },
+//   { title: 'Style', url: '#' },
+//   { title: 'Travel', url: '#' },
+// ];
 
 const Header = withMainContext(({ context, onSectionClick }) => {
   const classes = useStyles();
@@ -46,8 +46,8 @@ const Header = withMainContext(({ context, onSectionClick }) => {
     <React.Fragment>
       <Toolbar className={classes.toolbar}>
         {/*<Button size="small">Subscribe</Button>*/}
-        <Typography component="h2" variant="h5" color="inherit" align="center" noWrap className={classes.toolbarTitle}>
-          OReCaP - Ontology Recommendation via Categorization Power
+        <Typography component="h1" variant="h5" color="inherit" align="center" noWrap className={classes.toolbarTitle}>
+          <CenterFocusStrongIcon color="secondary" /> OReCaP - Ontology Recommendation via Categorization Power
         </Typography>
         <IconButton onClick={() => context.setIsSavedOntologiesDialogOpen(true)}>
           <Badge badgeContent={Object.keys(context.savedOntologies).length} color="primary">
@@ -61,13 +61,13 @@ const Header = withMainContext(({ context, onSectionClick }) => {
           Sign up
         </Button>*/}
       </Toolbar>
-      <Toolbar component="nav" variant="dense" className={classes.toolbarSecondary}>
+      {/* <Toolbar component="nav" variant="dense" className={classes.toolbarSecondary}>
         {sections.map((section) => (
           <Link color="inherit" noWrap key={section.title} variant="body2" href={section.url} onClick={onSectionClick(section.title)} className={classes.toolbarLink}>
             {section.title}
           </Link>
         ))}
-      </Toolbar>
+      </Toolbar> */}
     </React.Fragment>
   );
 });

@@ -17,6 +17,11 @@ import { getMatchedConceptMetadata } from '../utils';
 import axios from 'axios';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Skeleton from '@material-ui/lab/Skeleton';
+import IconButton from '@material-ui/core/IconButton';
+import green from '@material-ui/core/colors/green';
+import DeleteIcon from '@material-ui/icons/Delete';
+import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
+import { withMainContext } from '../context/MainContext';
 
 const useStyles = makeStyles({
   card: {
@@ -51,9 +56,13 @@ const useStyles = makeStyles({
   skeleton: {
     height: 150,
   },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  }
 });
 
-export default function VocabSearchResult({ vocabPrefix, onOpenDetails, matchedConcepts, keywordResults, selectedConcepts, handleSetSelectedConcept, focusedKeywords }) {
+const VocabSearchResult = withMainContext(({ context, vocabPrefix, onOpenDetails, matchedConcepts, keywordResults, selectedConcepts, handleSetSelectedConcept, focusedKeywords }) => {
   const classes = useStyles();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
@@ -70,12 +79,24 @@ export default function VocabSearchResult({ vocabPrefix, onOpenDetails, matchedC
       <Card className={classes.card}>
         <CardContent className={classes.cardContent}>
           {loading ? <><Skeleton className={classes.skeleton} /><LinearProgress /></> : !data ? <ReportProblemIcon /> : <>
-            <Typography variant="h5">
-              <strong>{data.prefix}</strong>: {data.titles.filter((t) => t.lang === 'en')[0].value}
-            </Typography>
-            <Typography variant="subtitle2" color="textSecondary" className={classes.uri}>
-              <Link href={data.uri} target="_blank">{data.uri}</Link>
-            </Typography>
+            <div className={classes.header}>
+              <div>
+                <Typography variant="h5">
+                  <strong>{data.prefix}</strong>: {data.titles.filter((t) => t.lang === 'en')[0].value}
+                </Typography>
+                <Typography variant="subtitle2" color="textSecondary" className={classes.uri}>
+                  <Link href={data.uri} target="_blank">{data.uri}</Link>
+                </Typography>
+              </div>
+              {context.savedOntologies[data.prefix] ?
+                <div>
+                  <Chip className={classes.chip} label={`FCP Score: ${context.savedOntologies[data.prefix].fcpScore}`} color="primary" 
+                    style={{backgroundColor: green[500]}} avatar={<Avatar><VerifiedUserIcon style={{backgroundColor: green[500]}}/></Avatar>} onClick={onOpenDetails} />
+                  <IconButton color="secondary" variant="contained" onClick={() => context.removeSavedOntology(data.prefix)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </div> : <></>}
+            </div>
             {/* <div className={classes.cardDetails}>
             <Typography variant="body2" paragraph className={classes.cardDescription}>
               {data.descriptions.filter((d) => d.lang === 'en')[0].value}
@@ -87,7 +108,8 @@ export default function VocabSearchResult({ vocabPrefix, onOpenDetails, matchedC
               <Chip className={classes.chip} key={tag} avatar={<Avatar>{tag.slice(0, 1)}</Avatar>} label={tag} title={`Tag: ${tag}`} onClick={() => {}} />
             ))}
           </div> */}
-            <div><Typography variant="body2">Matched keywords</Typography>
+            <div>
+              <Typography variant="body2">Matched keywords</Typography>
               {Object.keys(keywordResults).map((keyword) => {
                 const nMatches = Object.keys(keywordResults[keyword]).length;
                 return <Chip
@@ -127,8 +149,10 @@ export default function VocabSearchResult({ vocabPrefix, onOpenDetails, matchedC
       </Card>
     </Grid>
   );
-}
+});
 
 VocabSearchResult.propTypes = {
   item: PropTypes.object,
 };
+
+export default VocabSearchResult;

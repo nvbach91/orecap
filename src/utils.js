@@ -43,7 +43,9 @@ export const getMatchedConceptMetadata = ({ highlight, prefixedName }) => {
 
 export const calculateTotalFcpScore = ({ vocabDownloadUrl, fcpData, weights, selectedConcepts, categoryTypes }) => {
   let score = 0;
-  if (!vocabDownloadUrl || !fcpData) return score;
+  if (!vocabDownloadUrl || !fcpData) {
+    return score;
+  }
   Object.keys(categoryTypes).forEach((categoryType) => {
     const weight = weights[categoryType.slice(1) - 1];
     Object.keys(categoryTypes[categoryType]).forEach((focusClass) => {
@@ -56,7 +58,9 @@ export const calculateTotalFcpScore = ({ vocabDownloadUrl, fcpData, weights, sel
 };
 
 export const getCategoryTypes = ({ fcpData, vocabDownloadUrl }) => {
-  if (!fcpData || !vocabDownloadUrl) return {};
+  if (!fcpData || !vocabDownloadUrl) {
+    return {};
+  }
   const categoryTypes = {};
   Object.keys(fcpData[vocabDownloadUrl]).forEach((categoryType) => {
     const focusClasses = {}

@@ -35,7 +35,7 @@ export function MainContextProvider({ children }) {
       so.weights = defaultCategoryTypeWeightValues;
       setSavedOntologies(newSavedOntologies);
     }
-  }
+  };
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const addSavedOntology = (ontology) => {
     setSavedOntologies({ ...savedOntologies, [ontology.vocabData.prefix]: ontology });
@@ -44,6 +44,9 @@ export function MainContextProvider({ children }) {
     const so = { ...savedOntologies };
     delete so[prefix];
     setSavedOntologies(so);
+  };
+  const resetSavedOntologies = () => {
+    setSavedOntologies({});
   };
   const getValues = () => ({
     categoryTypeWeightValues,
@@ -56,6 +59,7 @@ export function MainContextProvider({ children }) {
     savedOntologies,
     addSavedOntology,
     removeSavedOntology,
+    resetSavedOntologies,
     isSavedOntologiesDialogOpen,
     setIsSavedOntologiesDialogOpen,
   });

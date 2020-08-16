@@ -62,8 +62,10 @@ const useStyles = makeStyles((theme) => ({
 const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose, selectedConcepts, matchedConcepts }) => {
   const classes = useStyles();
   const [loading, setLoading] = useState(false);
+  const [fcpLoading, setFcpLoading] = useState(false);
   const [vocabData, setVocabData] = useState(null);
   const [fcpData, setFcpData] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const [vocabDownloadUrl, setVocabDownloadUrl] = useState('');
   const _copyCanvas = useRef();
   const getWeightValues = () => {
@@ -73,31 +75,41 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
     return [...context.categoryTypeWeightValues];
   };
   useEffect(() => {
-    if (!vocabPrefix) return;
+    if (!vocabPrefix) {
+      return;
+    }
     const fetchData = async () => {
+      setErrorMessage('');
       setVocabData(null);
       setFcpData(null);
       setVocabDownloadUrl('');
       setLoading(true);
+      setFcpLoading(true);
       try {
         const vocabResp = await axios.get(`${lovApiBaseUrl}/api/v2/vocabulary/info?vocab=${vocabPrefix}`);
         setVocabData(vocabResp.data);
         const ontologyFileURL = [...vocabResp.data.versions].sort((a, b) => new Date(b.issued) - new Date(a.issued))[0].fileURL;
         setVocabDownloadUrl(ontologyFileURL);
-        const fcpResp = await axios.get(`${fcpApiUrl}?iris=${ontologyFileURL}&selectedClasses=${encodeURIComponent(Object.keys(selectedConcepts).join(','))}`);
+        setLoading(false);
+        const fcpResp = await axios.get(`${fcpApiUrl}?iri=${ontologyFileURL}&selectedClasses=${encodeURIComponent(Object.keys(selectedConcepts).join(','))}`);
         getWeightValues().forEach((v, index) => {
           if (!fcpResp.data[ontologyFileURL][`v${index + 1}`]) {
             fcpResp.data[ontologyFileURL][`v${index + 1}`] = [];
           }
         });
         setFcpData(fcpResp.data);
+        setFcpLoading(false);
       } catch (e) {
-
+        console.error(e);
+        if (e.response && e.response.data) {
+          setErrorMessage(e.response.data.msg);
+        } else if (e.toJSON) {
+          setErrorMessage(e.toJSON().message);
+        }
       }
-      setLoading(false);
     };
     fetchData();
-  }, [vocabPrefix]);
+  }, [vocabPrefix, selectedConcepts]);
 
   const handleCopyToClipboard = (text) => () => {
     copyToClipboard(text, _copyCanvas.current);
@@ -105,11 +117,6 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
   };
 
   const renderFocusCategories = () => {
-    if (!fcpData || !vocabDownloadUrl) {
-      return (
-        <Chip color="secondary" label="Failed to calculate FCP, please try again later" className={classes.chip} avatar={<Avatar><ReportProblemIcon /></Avatar>} />
-      );
-    }
     const categoryTypes = getCategoryTypes({ fcpData, vocabDownloadUrl });
     return Object.keys(categoryTypes).map((categoryType) => (
       <Card key={categoryType}>
@@ -135,7 +142,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
         <Card key={focusClass} className={classes.statementCard}>
           <CardContent>
             <Grid container>
-              <Grid container item xs={6} className={classes.gridItem}>Focus class | partial score =&nbsp;<strong>{score}</strong>&nbsp;(= {weight} * {data[focusClass].length})</Grid>
+              <Grid container item xs={6} className={classes.gridItem}>Focus class | partial score =&nbsp;<strong>{score}</strong>&nbsp;(= {data[focusClass].length} * {weight})</Grid>
               <Grid container item xs={6} className={classes.gridItem}>{`Categories (${data[focusClass].length})`}</Grid>
               <Grid container item xs={6} className={classes.gridItem}>
                 <List>
@@ -177,12 +184,12 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
   return (
     <Dialog fullWidth={true} maxWidth="md" open={!!vocabPrefix} onClose={handleClose}>
       <div ref={_copyCanvas}></div>
-      {loading ? <DialogContent><Skeleton className={classes.skeleton} /><LinearProgress /></DialogContent> :
-        !vocabData ? <></> : <>
-          <DialogTitle>
-            <div className={classes.dialogTitle}><strong>{vocabData.prefix}:</strong> {vocabData.titles.filter((t) => t.lang === 'en')[0].value} <Avatar src={rdfIconUrl} /></div>
-          </DialogTitle>
-          <DialogContent>
+      <DialogTitle>
+        {loading || !vocabData ? <LoadingSkeleton content="Loading vocabulary data, please wait..." /> : <div className={classes.dialogTitle}><strong>{vocabData.prefix}:</strong> {vocabData.titles.filter((t) => t.lang === 'en')[0].value} <Avatar src={rdfIconUrl} /></div>}
+      </DialogTitle>
+      <DialogContent>
+        {loading || !vocabData ? <LoadingSkeleton content="Loading vocabulary data, please wait..." /> :
+          <>
             <Typography variant="body2"><strong>Prefix</strong>: {vocabData.prefix}</Typography>
             <Typography variant="body2"><strong>URI</strong>: <Link href={vocabData.uri} target="_blank">{vocabData.uri}</Link></Typography>
             <Typography variant="body2"><strong>Namespace</strong>: <Link href={vocabData.nsp} target="_blank">{vocabData.nsp}</Link></Typography>
@@ -215,7 +222,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
                   </Typography>
                   <div>
                     <Typography display="inline" variant="body2"><strong>Issued</strong>: {moment(v.issued).format(dateFormat)}</Typography>
-                    <Button color="primary" target="_blank" href={v.fileURL} endIcon={<CloudDownloadIcon />}>Download RDF</Button>
+                    <Button color="primary" target="_blank" href={v.fileURL} title={v.fileURL} endIcon={<CloudDownloadIcon />}>Download RDF</Button>
                   </div>
                   <Typography display="inline" variant="body2"><strong>Classes</strong>: {v.classNumber}, </Typography>
                   <Typography display="inline" variant="body2"><strong>Properties</strong>: {v.propertyNumber}, </Typography>
@@ -224,6 +231,10 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
                 </CardContent>
               </Card>
             ))}
+          </>
+        }
+        {(fcpLoading || !fcpData) && !errorMessage ? <LoadingSkeleton content="Loading FCP data, please wait..." /> :
+          <>
             <Typography variant="h4"><strong>Total FCP score</strong>: {calculateTotalFcpScore({ vocabDownloadUrl, fcpData, weights: getWeightValues(), selectedConcepts, categoryTypes: getCategoryTypes({ fcpData, vocabDownloadUrl }) })}</Typography>
             <div>
               <Typography variant="body2" display="inline">Weight values: </Typography>
@@ -236,13 +247,25 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
             </div>
             <Typography variant="h6"><strong>FCP data</strong>:</Typography>
             {renderFocusCategories()}
-          </DialogContent>
-        </>}
+          </>}
+        {!errorMessage ? <></> : (
+          <>
+            <Chip color="secondary" label="Failed to calculate FCP, please try again later" className={classes.chip} avatar={<Avatar><ReportProblemIcon /></Avatar>} />
+            <br />
+            <Typography color="secondary" variant="body2">{errorMessage}</Typography>
+          </>
+        )}
+      </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="secondary">Close</Button>
       </DialogActions>
     </Dialog>
   );
 });
+
+const LoadingSkeleton = ({ content }) => {
+  const classes = useStyles();
+  return <><Typography variant="body2">{content}</Typography><Skeleton className={classes.skeleton} /><LinearProgress /></>
+};
 
 export default VocabDetailsDialog;
