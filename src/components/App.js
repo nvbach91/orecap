@@ -192,13 +192,13 @@ const App = withMainContext(({ context }) => {
         <Header onSectionClick={handleSectionClick} />
         <form className={classes.form} onSubmit={handleFetchSearchResults}>
           <Grid container spacing={2}>
-            <Grid item xs={4}>
+            <Grid item xs={6}>
               <TextField variant="outlined" margin="normal" required fullWidth label="Focused class keywords" name="keywords"
                 value={focusedSearchQuery}
                 onChange={e => setFocusedSearchQuery(e.target.value)}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={4}>
               <TextField variant="outlined" margin="normal" fullWidth label="Additional keywords" name="keywords"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
