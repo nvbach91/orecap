@@ -163,7 +163,7 @@ const App = withMainContext(({ context }) => {
     setLoading(false);
   };
   const handleSectionClick = (keyword) => () => {
-    if (!searchQuery.split(/\s+/).map((s) => s.toLowerCase()).includes(keyword.toLowerCase())) {
+    if (!searchQuery.split(/[\s,]+/).map((s) => s.toLowerCase()).includes(keyword.toLowerCase())) {
       setSearchQuery(`${searchQuery} ${keyword}`);
       _submitButton.current.click();
     }
@@ -224,8 +224,8 @@ const App = withMainContext(({ context }) => {
                 onOpenDetails={() => setSelectedVocabPrefix(vocabPrefix)}
                 matchedConcepts={matchedConcepts[vocabPrefix]}
                 keywordResults={keywordResults[vocabPrefix]}
-                focusedKeywords={[...new Set(focusedSearchQuery.split(/\s+/))]}
-                keywords={searchQuery.split(/\s+/)}
+                focusedKeywords={[...new Set(focusedSearchQuery.split(/[\s,]+/))]}
+                keywords={searchQuery.split(/[\s,]+/)}
                 selectedConcepts={selectedConcepts[vocabPrefix]}
                 handleSetSelectedConcept={handleSetSelectedConcept(vocabPrefix)} />
             )
