@@ -91,7 +91,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
         const ontologyFileURL = [...vocabResp.data.versions].sort((a, b) => new Date(b.issued) - new Date(a.issued))[0].fileURL;
         setVocabDownloadUrl(ontologyFileURL);
         setLoading(false);
-        const fcpResp = await axios.get(`${fcpApiUrl}?iri=${ontologyFileURL}&selectedClasses=${encodeURIComponent(Object.keys(selectedConcepts).join(','))}`);
+        const fcpResp = await axios.get(`${fcpApiUrl}?iri=${encodeURIComponent(ontologyFileURL)}&selectedClasses=${Object.keys(selectedConcepts).map((sc) => encodeURIComponent(sc)).join(',')}`);
         getWeightValues().forEach((v, index) => {
           if (!fcpResp.data[ontologyFileURL][`v${index + 1}`]) {
             fcpResp.data[ontologyFileURL][`v${index + 1}`] = [];
@@ -125,7 +125,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
   }, [vocabPrefix, selectedConcepts]);
 
   const handleCopyToClipboard = (text) => () => {
-    copyToClipboard(text, _copyCanvas.current);
+    copyToClipboard(text.replace(/[<>]/g, ''), _copyCanvas.current);
     context.setSnackBarContent('Copied to clipboard');
   };
 
@@ -155,33 +155,43 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
         <Card key={focusClass} className={classes.statementCard}>
           <CardContent>
             <Grid container>
-              <Grid container item xs={6} className={classes.gridItem}>Focus class | partial score =&nbsp;<strong>{score}</strong>&nbsp;(= {data[focusClass].length} * {weight})</Grid>
-              <Grid container item xs={6} className={classes.gridItem}>{`Categories (${data[focusClass].length})`}</Grid>
-              <Grid container item xs={6} className={classes.gridItem}>
+              <Grid container item xs={4} className={classes.gridItem}>
+                <Grid item xs={12}>Focus class</Grid>
+                <Grid item xs={12}>partial score =&nbsp;<strong>{score}</strong>&nbsp;(= {data[focusClass].length} * {weight})</Grid>
+              </Grid>
+              <Grid container item xs={8} className={classes.gridItem}>{`Categories (${data[focusClass].length})`}</Grid>
+              <Grid container item xs={4} className={classes.gridItem}>
                 <List>
                   <ListItem button className={classes.gridItem} onClick={handleCopyToClipboard(focusClass)} title={`Copy to clipboard: ${focusClass}\n\nPrefixed name: ${prefixedName}\n\nLabel: ${label}\n\nDescription: ${description}`}>
                     <ListItemIcon><ClassIcon /></ListItemIcon>
-                    <ListItemText>{focusClass.replace(new RegExp(vocabData.uri, 'g'), '').replace(/[<>]/g, '')}</ListItemText>
+                      <ListItemText>{focusClass.includes(vocabData.nsp) ? `${vocabData.prefix}:` : ''}<strong>{focusClass.replace(new RegExp(vocabData.nsp, 'g'), '').replace(/[<>]/g, '')}</strong></ListItemText>
                   </ListItem>
                 </List>
               </Grid>
-              <Grid container item xs={6}>
+              <Grid container item xs={8}>
                 <List>
                   {data[focusClass].map((category) => (
                     <ListItem key={category} button className={classes.gridItem} onClick={handleCopyToClipboard(category)} title={`Copy to clipboard: ${category}`}>
                       <ListItemIcon><CategoryIcon /></ListItemIcon>
                       <ListItemText>{(() => {
-                        const cat = category.replace(new RegExp(vocabData.uri, 'g'), '');
+                        const cat = category.replace(new RegExp(vocabData.nsp, 'g'), category.includes(vocabData.nsp) ? `${vocabData.prefix}:` : '');
                         if (cat.includes('.owl:Thing')) {
-                          return <><strong>{cat.replace('.owl:Thing', '').replace(/[<>]/g, '')}</strong>.owl:Thing</>
+                          const parts = cat.replace('.owl:Thing', '').replace(/[<>]/g, '').split(':');
+                          return <>{parts[0]}:<strong>{parts[1]}</strong> &bull; owl:<strong>Thing</strong></>
                         }
                         if (cat.includes('>.<')) {
-                          return <><strong>{cat.split('>.<')[0].replace(/[<>]/g, '')}</strong>.{cat.split('>.<')[1].replace(/[<>]/g, '')}</>
+                          const parts = cat.split('>.<').map((p) => p.replace(/[<>]/g, ''));
+                          const pa = parts[0].split(':');
+                          const pb = parts[1].split(':');
+                          return <>{pa[0]}:<strong>{pa[1]}</strong> &bull; {parts[1].startsWith('http') ? parts[1] : <>{pb[0]}:<strong>{pb[1]}</strong></>}</>
                         }
                         if (cat.includes('.{')) {
-                          return <><strong>{cat.split('.{')[0].replace(/[<>]/g, '')}</strong>{`.{${cat.split('.{')[1].replace(/[<>}]/g, '')}}`}</>
+                          const parts = cat.split('.{').map((p) => p.replace(/[<>]/g, ''));;
+                          const pa = parts[0].split(':');
+                          const pb = parts[1].split(':');
+                          return <>{pa[0]}:<strong>{pa[1]}</strong> &bull; {`{${pb[0]}`}:<strong>{pb[1]}</strong></>
                         }
-                        return cat.replace(/[<>]/g, '');
+                        return <>{cat.replace(/[<>]/g, '').startsWith('http') ? cat.replace(/[<>]/g, '') : <>{cat.replace(/[<>]/g, '').split(':')[0]}:<strong>{cat.replace(/[<>]/g, '').split(':')[1]}</strong></>}</>;
                       })()}
                       </ListItemText>
                     </ListItem>
@@ -195,7 +205,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
     });
   };
   return (
-    <Dialog fullWidth={true} maxWidth="md" open={!!vocabPrefix} onClose={handleClose}>
+    <Dialog fullWidth={true} maxWidth="lg" open={!!vocabPrefix} onClose={handleClose}>
       <div ref={_copyCanvas}></div>
       <DialogTitle>
         {loading || !vocabData ? <LoadingSkeleton content="Loading vocabulary data, please wait..." /> : <div className={classes.dialogTitle}><strong>{vocabData.prefix}:</strong> {vocabData.titles.filter((t) => t.lang === 'en')[0].value} <Avatar src={rdfIconUrl} /></div>}
