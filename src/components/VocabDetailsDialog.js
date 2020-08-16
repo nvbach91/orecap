@@ -163,7 +163,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
               <Grid container item xs={4} className={classes.gridItem}>
                 <List>
                   <ListItem button className={classes.gridItem} onClick={handleCopyToClipboard(focusClass)} title={`Copy to clipboard: ${focusClass}\n\nPrefixed name: ${prefixedName}\n\nLabel: ${label}\n\nDescription: ${description}`}>
-                    <ListItemIcon><ClassIcon /></ListItemIcon>
+                    <ListItemIcon><ClassIcon color="primary" /></ListItemIcon>
                       <ListItemText>{focusClass.includes(vocabData.nsp) ? `${vocabData.prefix}:` : ''}<strong>{focusClass.replace(new RegExp(vocabData.nsp, 'g'), '').replace(/[<>]/g, '')}</strong></ListItemText>
                   </ListItem>
                 </List>
@@ -256,7 +256,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
             ))}
           </>
         }
-        {(fcpLoading || !fcpData) && !errorMessage ? <LoadingSkeleton content="Loading FCP data, please wait..." /> :
+        {(fcpLoading || !fcpData) && !errorMessage ? <LoadingSkeleton content="Loading FCP categorization data, please wait..." /> :
           <>
             <Typography variant="h4"><strong>Total FCP score</strong>: {calculateTotalFcpScore({ vocabDownloadUrl, fcpData, weights: getWeightValues(), selectedConcepts, categoryTypes: getCategoryTypes({ fcpData, vocabDownloadUrl }) })}</Typography>
             <div>
@@ -268,7 +268,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
                 <SettingsIcon />
               </IconButton>
             </div>
-            <Typography variant="h6"><strong>FCP data</strong>:</Typography>
+            <Typography variant="h6"><strong>FCP categorizations</strong>:</Typography>
             {renderFocusCategories()}
           </>}
         {!errorMessage ? <></> : (

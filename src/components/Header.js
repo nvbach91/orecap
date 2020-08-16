@@ -49,12 +49,12 @@ const Header = withMainContext(({ context, onSectionClick }) => {
         <Typography component="h1" variant="h5" color="inherit" align="center" noWrap className={classes.toolbarTitle}>
           <CenterFocusStrongIcon color="secondary" /> OReCaP - Ontology Recommendation via Categorization Power
         </Typography>
-        <IconButton onClick={() => context.setIsSavedOntologiesDialogOpen(true)}>
+        <IconButton onClick={() => context.setIsSavedOntologiesDialogOpen(true)} title="Open list of saved FCP calculations">
           <Badge badgeContent={Object.keys(context.savedOntologies).length} color="primary">
             <ViewListIcon />
           </Badge>
         </IconButton>
-        <IconButton onClick={() => context.setIsSettingsDialogOpen(true)}>
+        <IconButton onClick={() => context.setIsSettingsDialogOpen(true)} title="Open settings">
           <SettingsIcon />
         </IconButton>
         {/*<Button variant="outlined" size="small">
