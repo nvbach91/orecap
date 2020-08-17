@@ -33,9 +33,9 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Chip from '@material-ui/core/Chip';
-import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import Paper from '@material-ui/core/Paper';
 import Skeleton from '@material-ui/lab/Skeleton';
 
 const useStyles = makeStyles((theme) => ({
@@ -145,13 +145,13 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
     }
     return (
       <>
-        <AppBar position="static">
-          <Tabs value={activeCategorizationTabIndex} onChange={handleSwitchCategorizationTab} aria-label="simple tabs example">
+        <Paper square>
+          <Tabs indicatorColor="primary" textColor="primary" value={activeCategorizationTabIndex} onChange={handleSwitchCategorizationTab} aria-label="simple tabs example">
             {Object.keys(categoryTypes).sort().map((categoryType) => (
-              <Tab wrapped key={categoryType} label={`Category type ${categoryType} (${Object.keys(categoryTypes[categoryType]).length})`} />
+              <Tab style={{ textTransform: 'none' }} wrapped key={categoryType} label={`Category type ${categoryType} (${Object.keys(categoryTypes[categoryType]).length})`} title={`Found ${Object.keys(categoryTypes[categoryType]).length} focus classes`} />
             ))}
           </Tabs>
-        </AppBar>
+        </Paper>
         {Object.keys(categoryTypes).sort().map((categoryType, index) => {
           if (activeCategorizationTabIndex !== index) {
             return null;

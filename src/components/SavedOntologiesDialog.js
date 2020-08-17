@@ -40,8 +40,8 @@ const SavedOntologiesDialog = withMainContext(({ context, setSelectedVocabPrefix
           </CardContent>
         </Card>
         {Object.keys(context.savedOntologies).sort((prefix1, prefix2) => {
-          const o1 = context.savedOntologies[prefix1].fcpScore;
-          const o2 = context.savedOntologies[prefix2].fcpScore;
+          const o1 = parseFloat(context.savedOntologies[prefix1].fcpScore);
+          const o2 = parseFloat(context.savedOntologies[prefix2].fcpScore);
           return o1 > o2 ? -1 : o1 < o2 ? 1 : 0;
         }).map((prefix) => {
           const { vocabData, fcpScore, vocabDownloadUrl } = context.savedOntologies[prefix];
