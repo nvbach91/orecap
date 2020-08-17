@@ -33,6 +33,9 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Chip from '@material-ui/core/Chip';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import Skeleton from '@material-ui/lab/Skeleton';
 
 const useStyles = makeStyles((theme) => ({
@@ -67,6 +70,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
   const [fcpData, setFcpData] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [vocabDownloadUrl, setVocabDownloadUrl] = useState('');
+  const [activeCategorizationTabIndex, setActiveCategorizationTabIndex] = useState(0);
   const _copyCanvas = useRef();
   const getWeightValues = () => {
     if (context.savedOntologies[vocabPrefix]) {
@@ -129,16 +133,38 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
     context.setSnackBarContent('Copied to clipboard');
   };
 
+  const handleSwitchCategorizationTab = (e, value) => {
+    setActiveCategorizationTabIndex(value);
+  };
+
   const renderFocusCategories = () => {
     const categoryTypes = getCategoryTypes({ fcpData, vocabDownloadUrl });
-    return Object.keys(categoryTypes).sort().map((categoryType) => (
-      <Card key={categoryType}>
-        <CardContent>
-          <Typography variant="body2"><strong>Category type {categoryType}</strong></Typography>
-          {renderCategoryType(categoryTypes[categoryType], categoryType)}
-        </CardContent>
-      </Card>
-    ));
+    if (!Object.keys(categoryTypes).length) {
+      return <></>;
+    }
+    return (
+      <>
+        <AppBar position="static">
+          <Tabs value={activeCategorizationTabIndex} onChange={handleSwitchCategorizationTab} aria-label="simple tabs example">
+            {Object.keys(categoryTypes).sort().map((categoryType) => (
+              <Tab wrapped key={categoryType} label={`Category type ${categoryType} (${Object.keys(categoryTypes[categoryType]).length})`} />
+            ))}
+          </Tabs>
+        </AppBar>
+        {Object.keys(categoryTypes).sort().map((categoryType, index) => {
+          if (activeCategorizationTabIndex !== index) {
+            return <></>;
+          }
+          return (
+            <Card key={categoryType}>
+              <CardContent>
+                {renderCategoryType(categoryTypes[categoryType], categoryType)}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </>
+    );
   }
   const renderCategoryType = (data, categoryType) => {
     const weight = getWeightValues()[categoryType.slice(1) - 1];
@@ -164,7 +190,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
                 <List>
                   <ListItem button className={classes.gridItem} onClick={handleCopyToClipboard(focusClass)} title={`Copy to clipboard: ${focusClass}\n\nPrefixed name: ${prefixedName}\n\nLabel: ${label}\n\nDescription: ${description}`}>
                     <ListItemIcon><ClassIcon color="primary" /></ListItemIcon>
-                      <ListItemText>{focusClass.includes(vocabData.nsp) ? `${vocabData.prefix}:` : ''}<strong>{focusClass.replace(new RegExp(vocabData.nsp, 'g'), '').replace(/[<>]/g, '')}</strong></ListItemText>
+                    <ListItemText>{focusClass.includes(vocabData.nsp) ? `${vocabData.prefix}:` : ''}<strong>{focusClass.replace(new RegExp(vocabData.nsp, 'g'), '').replace(/[<>]/g, '')}</strong></ListItemText>
                   </ListItem>
                 </List>
               </Grid>
