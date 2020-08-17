@@ -66,7 +66,7 @@ export const getCategoryTypes = ({ fcpData, vocabDownloadUrl }) => {
     const focusClasses = {}
     fcpData[vocabDownloadUrl][categoryType].forEach((statement) => {
       const parts = statement.split(' | ');
-      if (categoryType === 'v1') {
+      if (categoryType === 't1') {
         /*eslint no-useless-escape: "off"*/
         focusClasses[parts[1]] = parts[2].replace(/[\[\]]/g, '').split(', ');
       } else {

@@ -93,8 +93,8 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
         setLoading(false);
         const fcpResp = await axios.get(`${fcpApiUrl}?iri=${encodeURIComponent(ontologyFileURL)}&selectedClasses=${Object.keys(selectedConcepts).map((sc) => encodeURIComponent(sc)).join(',')}`);
         getWeightValues().forEach((v, index) => {
-          if (!fcpResp.data[ontologyFileURL][`v${index + 1}`]) {
-            fcpResp.data[ontologyFileURL][`v${index + 1}`] = [];
+          if (!fcpResp.data[ontologyFileURL][`t${index + 1}`]) {
+            fcpResp.data[ontologyFileURL][`t${index + 1}`] = [];
           }
         });
         setFcpData(fcpResp.data);
@@ -109,7 +109,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
             fcpData: fcpResp.data,
             weights: getWeightValues(),
             selectedConcepts,
-            categoryTypes: getCategoryTypes({ fcpData: fcpResp.data, vocabDownloadUrl: ontologyFileURL })
+            categoryTypes: getCategoryTypes({ fcpData: fcpResp.data, vocabDownloadUrl: ontologyFileURL }),
           })
         });
       } catch (e) {
@@ -131,7 +131,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
 
   const renderFocusCategories = () => {
     const categoryTypes = getCategoryTypes({ fcpData, vocabDownloadUrl });
-    return Object.keys(categoryTypes).map((categoryType) => (
+    return Object.keys(categoryTypes).sort().map((categoryType) => (
       <Card key={categoryType}>
         <CardContent>
           <Typography variant="body2"><strong>Category type {categoryType}</strong></Typography>
@@ -183,13 +183,13 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
                           const parts = cat.split('>.<').map((p) => p.replace(/[<>]/g, ''));
                           const pa = parts[0].split(':');
                           const pb = parts[1].split(':');
-                          return <>{pa[0]}:<strong>{pa[1]}</strong> &bull; {parts[1].startsWith('http') ? parts[1] : <>{pb[0]}:<strong>{pb[1]}</strong></>}</>
+                          return <>{pa[0]}:<strong>{pa[1]}</strong><br />&bull; {parts[1].startsWith('http') ? parts[1] : <>{pb[0]}:<strong>{pb[1]}</strong></>}</>
                         }
                         if (cat.includes('.{')) {
                           const parts = cat.split('.{').map((p) => p.replace(/[<>]/g, ''));;
                           const pa = parts[0].split(':');
                           const pb = parts[1].split(':');
-                          return <>{pa[0]}:<strong>{pa[1]}</strong> &bull; {`{${pb[0]}`}:<strong>{pb[1]}</strong></>
+                          return <>{pa[0]}:<strong>{pa[1]}</strong><br />&bull; {parts[1].startsWith('http') ? `{${parts[1]}` : <>{`{${pb[0]}`}:<strong>{pb[1]}</strong></>}</>
                         }
                         return <>{cat.replace(/[<>]/g, '').startsWith('http') ? cat.replace(/[<>]/g, '') : <>{cat.replace(/[<>]/g, '').split(':')[0]}:<strong>{cat.replace(/[<>]/g, '').split(':')[1]}</strong></>}</>;
                       })()}
@@ -262,7 +262,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
             <div>
               <Typography variant="body2" display="inline">Weight values: </Typography>
               {getWeightValues().map((v, i) => (
-                <Chip key={i} label={v} className={classes.chip} avatar={<Avatar>{`v${i + 1}`}</Avatar>} />
+                <Chip key={i} label={v} className={classes.chip} avatar={<Avatar>{`t${i + 1}`}</Avatar>} />
               ))}
               <IconButton onClick={() => context.setIsSettingsDialogOpen(true)}>
                 <SettingsIcon />

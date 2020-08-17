@@ -41,7 +41,7 @@ const SettingsDialog = withMainContext(({ context, selectedVocabPrefix }) => {
         {(context.savedOntologies[selectedVocabPrefix] ? context.savedOntologies[selectedVocabPrefix].weights : context.categoryTypeWeightValues).map((value, index) => (
           <Card key={index} className={classes.settingSection}>
             <CardContent>
-              <Typography variant="h6">Category type v{index + 1}</Typography>
+              <Typography variant="h6">Category type t{index + 1}</Typography>
               <Grid container spacing={2} alignItems="center">
                 <Grid item><EqualizerIcon /></Grid>
                 <Grid item xs>
