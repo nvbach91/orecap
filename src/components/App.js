@@ -193,13 +193,13 @@ const App = withMainContext(({ context }) => {
         <form className={classes.form} onSubmit={handleFetchSearchResults}>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <TextField variant="outlined" margin="normal" required fullWidth label="Focused class keywords" name="keywords"
+              <TextField variant="outlined" margin="normal" required fullWidth label="Focused class keywords" title="Please fill in a list of keywords separated by a space or a comma"
                 value={focusedSearchQuery}
                 onChange={e => setFocusedSearchQuery(e.target.value)}
               />
             </Grid>
             <Grid item xs={4}>
-              <TextField variant="outlined" margin="normal" fullWidth label="Additional keywords" name="keywords"
+              <TextField variant="outlined" margin="normal" fullWidth label="Additional keywords" title="Please fill in a list of keywords separated by a space or a comma"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 InputProps={{
