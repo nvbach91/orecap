@@ -37,6 +37,10 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Paper from '@material-ui/core/Paper';
 import Skeleton from '@material-ui/lab/Skeleton';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 const useStyles = makeStyles((theme) => ({
   versionCard: {
@@ -156,13 +160,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
           if (activeCategorizationTabIndex !== index) {
             return null;
           }
-          return (
-            <Card key={categoryType}>
-              <CardContent>
-                {renderCategoryType(categoryTypes[categoryType], categoryType)}
-              </CardContent>
-            </Card>
-          );
+          return renderCategoryType(categoryTypes[categoryType], categoryType);
         })}
       </>
     );
@@ -179,15 +177,19 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
       const { label, description, prefixedName } = getMatchedConceptMetadata(matchedConcepts[focusClass.replace(/[<>]/g, '')]);
       const score = (weight * data[focusClass].length).toFixed(2);
       return (
-        <Card key={focusClass} className={classes.statementCard}>
-          <CardContent>
+        <Accordion key={focusClass} defaultExpanded={true}>
+          <AccordionSummary className={classes.statementCard} expandIcon={<ExpandMoreIcon />}>
             <Grid container>
-              <Grid container item xs={4} className={classes.gridItem}>
-                <Grid item xs={12}>Focus class</Grid>
+              <Grid container item xs={5}>
+                <Grid item xs={12}>Focus class ({focusClass.includes(vocabData.nsp) ? `${vocabData.prefix}:` : ''}<strong>{focusClass.replace(new RegExp(vocabData.nsp, 'g'), '').replace(/[<>]/g, '')}</strong>)</Grid>
                 <Grid item xs={12}>partial score =&nbsp;<strong>{score}</strong>&nbsp;(= {data[focusClass].length} * {weight})</Grid>
               </Grid>
-              <Grid container item xs={8} className={classes.gridItem}>{`Categories (${data[focusClass].length})`}</Grid>
-              <Grid container item xs={4} className={classes.gridItem}>
+              <Grid item xs={7} className={classes.gridItem}>{`Categories (${data[focusClass].length})`}</Grid>
+            </Grid>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container>
+              <Grid container item xs={5} className={classes.gridItem}>
                 <List>
                   <ListItem button className={classes.gridItem} onClick={handleCopyToClipboard(focusClass)} title={`Copy to clipboard: ${focusClass}\n\nPrefixed name: ${prefixedName}\n\nLabel: ${label}\n\nDescription: ${description}`}>
                     <ListItemIcon><ClassIcon color="primary" /></ListItemIcon>
@@ -195,7 +197,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
                   </ListItem>
                 </List>
               </Grid>
-              <Grid container item xs={8}>
+              <Grid container item xs={7}>
                 <List>
                   {data[focusClass].map((category) => (
                     <ListItem key={category} button className={classes.gridItem} onClick={handleCopyToClipboard(category)} title={`Copy to clipboard: ${category}`}>
@@ -226,8 +228,8 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
                 </List>
               </Grid>
             </Grid>
-          </CardContent>
-        </Card>
+          </AccordionDetails>
+        </Accordion>
       );
     });
   };
