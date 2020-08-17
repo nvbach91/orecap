@@ -83,6 +83,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
       return;
     }
     const fetchData = async () => {
+      setActiveCategorizationTabIndex(0);
       setErrorMessage('');
       setVocabData(null);
       setFcpData(null);
