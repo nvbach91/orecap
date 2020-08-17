@@ -1,6 +1,6 @@
 {
-  "short_name": "FCP Demo",
-  "name": "Focused Categorization Power of Ontologies Demo",
+  "short_name": "OReCaP",
+  "name": "OReCaP - Ontology Recommendation via Categorization Power",
   "icons": [
     {
       "src": "favicon.ico",

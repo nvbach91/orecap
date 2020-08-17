@@ -64,7 +64,7 @@ export default function Footer(props) {
               OReCaP - A tool based on <Link target="_blank" href="http://www.semantic-web-journal.net/content/focused-categorization-power-ontologies-general-framework-and-study-simple-existential">Focused Categorization Power of Ontologies</Link>
             </Typography>
             <Typography variant="subtitle2" align="center" color="textSecondary" component="p">
-              <GitHubIcon /> GitHub Projects: <Link target="_blank" href="https://github.com/nvbach91/FCP_api">FCP API</Link> | <Link target="_blank" href="https://github.com/nvbach91/fcp-demo">FCP Demo</Link>
+              <GitHubIcon /> GitHub Projects: <Link target="_blank" href="https://github.com/nvbach91/FCP_api">FCP API</Link> | <Link target="_blank" href="https://github.com/nvbach91/fcp-demo">OReCaP</Link>
             </Typography>
             <Typography variant="subtitle2" align="center" color="textSecondary" component="p">
               Powered by <Link target="_blank" href="https://lov.linkeddata.es/dataset/lov">Linked Open Vocabularies (LOV)</Link> and <Link target="_blank" href="https://github.com/owlcs/owlapi">OWL API 5</Link>
