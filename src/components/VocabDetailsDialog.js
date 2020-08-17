@@ -153,7 +153,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
         </AppBar>
         {Object.keys(categoryTypes).sort().map((categoryType, index) => {
           if (activeCategorizationTabIndex !== index) {
-            return <></>;
+            return null;
           }
           return (
             <Card key={categoryType}>
