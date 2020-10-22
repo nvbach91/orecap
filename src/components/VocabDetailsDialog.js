@@ -177,7 +177,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
       const { label, description, prefixedName } = getMatchedConceptMetadata(matchedConcepts[focusClass.replace(/[<>]/g, '')]);
       const score = (weight * data[focusClass].length).toFixed(2);
       return (
-        <Accordion key={focusClass} defaultExpanded={true}>
+        <Accordion key={focusClass} defaultExpanded={false}>
           <AccordionSummary className={classes.statementCard} expandIcon={<ExpandMoreIcon />}>
             <Grid container>
               <Grid container item xs={5}>
@@ -268,9 +268,17 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
                             categoryTypes: getCategoryTypes({ fcpData, vocabDownloadUrl })
                           })
                         });
-                      }}>Save calculation to library</Button>
+                      }}>Save calculation to list</Button>
                       :
-                      <Button color="secondary" variant="outlined" endIcon={<PlaylistAddCheckIcon />} onClick={() => context.removeSavedOntology(vocabData.prefix)}>Remove calculation from library</Button>}
+                      <Button 
+                        color="secondary" 
+                        variant="outlined" 
+                        endIcon={<PlaylistAddCheckIcon />} 
+                        onClick={() => context.removeSavedOntology(vocabData.prefix)}
+                      >
+                        Remove calculation from list
+                      </Button>
+                    }
                   </Typography>
                   <div>
                     <Typography display="inline" variant="body2"><strong>Issued</strong>: {moment(v.issued).format(dateFormat)}</Typography>
