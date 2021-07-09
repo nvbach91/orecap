@@ -81,3 +81,8 @@ export const getCategoryTypes = ({ fcpData, vocabDownloadUrl }) => {
   });
   return categoryTypes;
 };
+
+
+export const getCamelCaseTokens = (str) => {
+  return str.replace(/([^A-Z])([A-Z])/g, '$1 $2').toLowerCase().split(' ');
+};

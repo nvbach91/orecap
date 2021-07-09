@@ -22,6 +22,7 @@ import { withMainContext } from '../context/MainContext';
 
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import { getCamelCaseTokens, getMatchedConceptMetadata } from '../utils';
 
 const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />;
 
@@ -71,7 +72,12 @@ const App = withMainContext(({ context }) => {
       }
       const keywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?type=class&q=${keyword}`);
       keywordResp.data.results.filter((result) => {
-        return result.type === 'class';
+        console.log(result);
+        const hasPrefixedName = result.prefixedName && result.prefixedName.length && result.prefixedName[0].includes(':');
+        const keywordMatchesPrefixedNameCamelCaseTokens = hasPrefixedName && getCamelCaseTokens(result.prefixedName[0].split(':')[1]).includes(keyword.toLowerCase());
+        const resultMetadata = getMatchedConceptMetadata(result);
+        const keywordMatchesLabelCamelCaseTokens = resultMetadata.label && getCamelCaseTokens(resultMetadata.label).includes(keyword.toLowerCase());
+        return result.type === 'class' && (keywordMatchesPrefixedNameCamelCaseTokens || keywordMatchesLabelCamelCaseTokens);
       }).forEach((result) => {
         const prefixedName = result.prefixedName.join('');
         const highlight = result.highlight;
