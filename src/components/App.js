@@ -73,9 +73,17 @@ const App = withMainContext(({ context }) => {
       const keywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?type=class&q=${keyword}`);
       keywordResp.data.results.filter((result) => {
         const hasPrefixedName = result.prefixedName && result.prefixedName.length && result.prefixedName[0].includes(':');
-        const keywordMatchesPrefixedNameCamelCaseTokens = hasPrefixedName && getCamelCaseTokens(result.prefixedName[0].split(':')[1]).includes(keyword.toLowerCase());
+        const keywordMatchesPrefixedNameCamelCaseTokens = 
+          hasPrefixedName && 
+          getCamelCaseTokens(result.prefixedName[0].split(':')[1]).filter((token) => {
+            return keyword.toUpperCase() === keyword ? token.startsWith(keyword) : token.toLowerCase() === keyword.toLowerCase();
+          }).length
         const resultMetadata = getMatchedConceptMetadata(result);
-        const keywordMatchesLabelCamelCaseTokens = resultMetadata.label && getCamelCaseTokens(resultMetadata.label).includes(keyword.toLowerCase());
+        const keywordMatchesLabelCamelCaseTokens = 
+          resultMetadata.label && 
+          getCamelCaseTokens(resultMetadata.label).filter((token) => {
+            return keyword.toUpperCase() === keyword ? token.startsWith(keyword) : token.toLowerCase() === keyword.toLowerCase();
+          }).length;
         return result.type === 'class' && (keywordMatchesPrefixedNameCamelCaseTokens || keywordMatchesLabelCamelCaseTokens);
       }).forEach((result) => {
         const prefixedName = result.prefixedName.join('');
