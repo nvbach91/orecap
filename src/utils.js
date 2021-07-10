@@ -84,5 +84,5 @@ export const getCategoryTypes = ({ fcpData, vocabDownloadUrl }) => {
 
 
 export const getCamelCaseTokens = (str) => {
-  return str.replace(/([^A-Z])([A-Z])/g, '$1 $2').split(' ');
+  return str.replace(/[_-]/g,'').replace(/([^A-Z])([A-Z])/g, '$1 $2').split(' ');
 };
