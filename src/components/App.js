@@ -23,6 +23,7 @@ import { withMainContext } from '../context/MainContext';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import { getCamelCaseTokens, getMatchedConceptMetadata } from '../utils';
+import ReuseSummaryDialog from './ReuseSummaryDialog';
 
 const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />;
 
@@ -253,6 +254,7 @@ const App = withMainContext(({ context }) => {
         matchedConcepts={matchedConcepts[selectedVocabPrefix]} />
       <SettingsDialog selectedVocabPrefix={selectedVocabPrefix} />
       <SavedOntologiesDialog setSelectedVocabPrefix={setSelectedVocabPrefix} />
+      <ReuseSummaryDialog />
       <Snackbar open={!!context.snackBarContent} autoHideDuration={5000} onClose={() => context.setSnackBarContent('')}>
         <Alert onClose={() => context.setSnackBarContent('')} severity="success">{context.snackBarContent}</Alert>
       </Snackbar>

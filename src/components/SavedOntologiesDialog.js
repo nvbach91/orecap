@@ -70,6 +70,7 @@ const SavedOntologiesDialog = withMainContext(({ context, setSelectedVocabPrefix
         })}
       </DialogContent>
       <DialogActions>
+        {!!Object.keys(context.savedOntologies).length && <Button onClick={() => context.setIsReuseSummaryDialogOpen(true)} color="primary">Show Re-use summary</Button>}
         <Button onClick={() => context.setIsSavedOntologiesDialogOpen(false)} color="secondary">Close</Button>
       </DialogActions>
     </Dialog>

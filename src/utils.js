@@ -1,3 +1,5 @@
+import React from 'react';
+import { Link } from "@material-ui/core";
 
 export const copyToClipboard = (textToCopy, container) => {
   // console.log(container);
@@ -8,6 +10,14 @@ export const copyToClipboard = (textToCopy, container) => {
   textField.select();
   document.execCommand('copy');
   cont.removeChild(textField);
+};
+
+export const createShortenedIRILink = (iri, nsp, prefix) => {
+  if (/^<.*>$/.test(iri)) {
+    const iriWithoutBrackets = iri.slice(1, -1);
+    return <Link target="_blank" href={iriWithoutBrackets}>{prefix}:<strong>{iriWithoutBrackets.replace(nsp, '')}</strong></Link>;
+  }
+  return <Link target="_blank" href={iri}>{prefix}:{iri.replace(nsp, '')}</Link>;
 };
 
 export const getMatchedConceptMetadata = ({ highlight, prefixedName }) => {
@@ -84,5 +94,11 @@ export const getCategoryTypes = ({ fcpData, vocabDownloadUrl }) => {
 
 
 export const getCamelCaseTokens = (str) => {
-  return str.replace(/[_-]/g,'').replace(/([^A-Z])([A-Z])/g, '$1 $2').split(' ');
+  if (str.includes('-')) {
+    return str.split('-').filter((str) => !!str);
+  }
+  if (str.includes('_')) {
+    return str.split('_').filter((str) => !!str);;
+  }
+  return str.replace(/([^A-Z])([A-Z])/g, '$1 $2').split(' ').filter((str) => !!str);;
 };

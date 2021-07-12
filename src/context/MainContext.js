@@ -6,6 +6,7 @@ const defaultCategoryTypeWeightValues = [1, 0.3, 0.5, 0.7];
 export function MainContextProvider({ children }) {
   const [savedOntologies, setSavedOntologies] = useState({});
   const [isSavedOntologiesDialogOpen, setIsSavedOntologiesDialogOpen] = useState(false);
+  const [isReuseSummaryDialogOpen, setIsReuseSummaryDialogOpen] = useState(false);
   const [snackBarContent, setSnackBarContent] = useState('');
   const [categoryTypeWeightValues, setCategoryTypeWeightValues] = useState(
     JSON.parse(localStorage.getItem('categoryTypeWeightValues') || JSON.stringify(defaultCategoryTypeWeightValues))
@@ -62,6 +63,8 @@ export function MainContextProvider({ children }) {
     resetSavedOntologies,
     isSavedOntologiesDialogOpen,
     setIsSavedOntologiesDialogOpen,
+    isReuseSummaryDialogOpen,
+    setIsReuseSummaryDialogOpen,
   });
   return (
     <MainContext.Provider value={getValues()}>
