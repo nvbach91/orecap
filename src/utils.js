@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from "@material-ui/core";
+import InteractiveLink from './components/InteractiveLink';
 
 export const copyToClipboard = (textToCopy, container) => {
   // console.log(container);
@@ -12,12 +12,12 @@ export const copyToClipboard = (textToCopy, container) => {
   cont.removeChild(textField);
 };
 
-export const createShortenedIRILink = (iri, nsp, prefix) => {
-  if (/^<.*>$/.test(iri)) {
-    const iriWithoutBrackets = iri.slice(1, -1);
-    return <Link target="_blank" href={iriWithoutBrackets}>{prefix}:<strong>{iriWithoutBrackets.replace(nsp, '')}</strong></Link>;
-  }
-  return <Link target="_blank" href={iri}>{prefix}:{iri.replace(nsp, '')}</Link>;
+export const createShortenedIRILink = (iri, nsp, prefix, secondary) => {
+    return (
+      <InteractiveLink key={iri} iri={iri} color={secondary ? 'inherit' : 'primary'} target="_blank" href={iri}>
+        {prefix}:<strong>{iri.replace(nsp, '')}</strong>
+      </InteractiveLink>
+    );
 };
 
 export const getMatchedConceptMetadata = ({ highlight, prefixedName }) => {

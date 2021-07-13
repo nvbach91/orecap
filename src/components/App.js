@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import IconButton from "@material-ui/core/IconButton";
@@ -24,6 +24,9 @@ import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import { getCamelCaseTokens, getMatchedConceptMetadata } from '../utils';
 import ReuseSummaryDialog from './ReuseSummaryDialog';
+import Chip from '@material-ui/core/Chip';
+import Typography from '@material-ui/core/Typography';
+
 
 const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />;
 
@@ -43,6 +46,7 @@ const App = withMainContext(({ context }) => {
   const [keywordResults, setKeywordResults] = useState({});
   const [selectedConcepts, setSelectedConcepts] = useState({});
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [triggerFormSubmit, setTriggerFormSubmit] = useState(false);
   const _submitButton = useRef();
   const classes = useStyles();
   const handleFetchSearchResults = (e) => {
@@ -74,14 +78,14 @@ const App = withMainContext(({ context }) => {
       const keywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?type=class&q=${keyword}`);
       keywordResp.data.results.filter((result) => {
         const hasPrefixedName = result.prefixedName && result.prefixedName.length && result.prefixedName[0].includes(':');
-        const keywordMatchesPrefixedNameCamelCaseTokens = 
-          hasPrefixedName && 
+        const keywordMatchesPrefixedNameCamelCaseTokens =
+          hasPrefixedName &&
           getCamelCaseTokens(result.prefixedName[0].split(':')[1]).filter((token) => {
             return keyword.toUpperCase() === keyword ? token.startsWith(keyword) : token.toLowerCase() === keyword.toLowerCase();
           }).length
         const resultMetadata = getMatchedConceptMetadata(result);
-        const keywordMatchesLabelCamelCaseTokens = 
-          resultMetadata.label && 
+        const keywordMatchesLabelCamelCaseTokens =
+          resultMetadata.label &&
           getCamelCaseTokens(resultMetadata.label).filter((token) => {
             return keyword.toUpperCase() === keyword ? token.startsWith(keyword) : token.toLowerCase() === keyword.toLowerCase();
           }).length;
@@ -182,6 +186,11 @@ const App = withMainContext(({ context }) => {
       _submitButton.current.click();
     }
   };
+  useEffect(() => {
+    if (triggerFormSubmit) {
+      _submitButton.current.click();
+    }
+  }, [triggerFormSubmit]);
   // useEffect(() => {
   //   const timeout = setTimeout(() => fetchSearchResults(), 500);
   //   return () => { clearTimeout(timeout); };
@@ -211,6 +220,11 @@ const App = withMainContext(({ context }) => {
                 value={focusedSearchQuery}
                 onChange={e => setFocusedSearchQuery(e.target.value)}
               />
+              {!triggerFormSubmit && (
+                <span>
+                  <Typography>Try keyword</Typography> <Chip size="small" color="primary" onClick={(e) => { e.preventDefault(); setFocusedSearchQuery('vehicle car automobile truck'); setTriggerFormSubmit(true); }} label="vehicle car automobile truck" />
+                </span>
+              )}
             </Grid>
             <Grid item xs={4}>
               <TextField variant="outlined" margin="normal" fullWidth label="Additional keywords" title="Please fill in a list of keywords separated by a space or a comma"
