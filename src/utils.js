@@ -15,7 +15,7 @@ export const copyToClipboard = (textToCopy, container) => {
 export const createShortenedIRILink = (iri, nsp, prefix, secondary) => {
     return (
       <InteractiveLink key={iri} iri={iri} color={secondary ? 'inherit' : 'primary'} target="_blank" href={iri}>
-        {prefix}:<strong>{iri.replace(nsp, '')}</strong>
+        {iri.includes(nsp) ? `${prefix}:` : '' }<strong>{iri.replace(nsp, '')}</strong>
       </InteractiveLink>
     );
 };
