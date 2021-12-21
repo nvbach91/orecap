@@ -152,7 +152,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
         <Paper square>
           <Tabs indicatorColor="primary" textColor="primary" value={activeCategorizationTabIndex} onChange={handleSwitchCategorizationTab} aria-label="simple tabs example">
             {Object.keys(categoryTypes).sort().map((categoryType) => (
-              <Tab style={{ textTransform: 'none' }} wrapped key={categoryType} label={`Category type ${categoryType} (${Object.keys(categoryTypes[categoryType]).length})`} title={`Found ${Object.keys(categoryTypes[categoryType]).length} focus classes`} />
+              <Tab style={{ textTransform: 'none' }} wrapped key={categoryType} label={`Category pattern ${categoryType.replace('t', 'c')} (${Object.keys(categoryTypes[categoryType]).length})`} title={`Found ${Object.keys(categoryTypes[categoryType]).length} focus classes`} />
             ))}
           </Tabs>
         </Paper>
@@ -299,7 +299,7 @@ const VocabDetailsDialog = withMainContext(({ context, vocabPrefix, handleClose,
             <div>
               <Typography variant="body2" display="inline">Weight values: </Typography>
               {getWeightValues().map((v, i) => (
-                <Chip key={i} label={v} className={classes.chip} avatar={<Avatar>{`t${i + 1}`}</Avatar>} />
+                <Chip key={i} label={v} className={classes.chip} avatar={<Avatar>{`c${i + 1}`}</Avatar>} />
               ))}
               <IconButton onClick={() => context.setIsSettingsDialogOpen(true)}>
                 <SettingsIcon />
