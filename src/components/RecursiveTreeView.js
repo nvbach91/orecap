@@ -20,6 +20,7 @@ const RecursiveTreeView = withMainContext(({ context, data, checkedNodes, onChec
   const getTypeColor = (type) => {
     switch (type) {
       case 'owl:Thing': return 'primary';
+      case '<focus class>': return 'default';
       case '<named subclasses>': return 'primary';
       case '<expressions>': return 'secondary';
       case '<classes>': return 'secondary';
@@ -34,9 +35,9 @@ const RecursiveTreeView = withMainContext(({ context, data, checkedNodes, onChec
         nodeId={nodes.id} 
         label={
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-            <span>
+            <span style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
               <Checkbox color="primary" checked={!!checkedNodes[nodes.id]} onClick={(e) => { e.stopPropagation(); onCheckNode(nodes.id, data); }}/>
-              {nodes.name} {nodes.type ? <Chip size="small" color={getTypeColor(nodes.type)} label={nodes.type} /> : <></>}
+              <span style={{ marginRight: 'auto' }}>{nodes.name}</span> {nodes.type ? <Chip size="small" color={getTypeColor(nodes.type)} label={nodes.type} /> : <></>}
             </span>
             <span></span>
           </div>

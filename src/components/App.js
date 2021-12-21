@@ -28,6 +28,11 @@ import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
 
 
+const suggestedKeywords = [
+  'vehicle car automobile truck',
+  'animal fish insect'
+];
+
 const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />;
 
 const useStyles = makeStyles((theme) => ({
@@ -222,7 +227,20 @@ const App = withMainContext(({ context }) => {
               />
               {!triggerFormSubmit && (
                 <span>
-                  <Typography>Try keyword</Typography> <Chip size="small" color="primary" onClick={(e) => { e.preventDefault(); setFocusedSearchQuery('vehicle car automobile truck'); setTriggerFormSubmit(true); }} label="vehicle car automobile truck" />
+                  <Typography>Try keyword</Typography>
+                  {suggestedKeywords.map((k) => (
+                    <Chip
+                      key={k}
+                      size="small"
+                      color="primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setFocusedSearchQuery(k);
+                        setTriggerFormSubmit(true);
+                      }}
+                      label={k}
+                    />
+                  ))}
                 </span>
               )}
             </Grid>

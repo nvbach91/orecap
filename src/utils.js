@@ -13,11 +13,11 @@ export const copyToClipboard = (textToCopy, container) => {
 };
 
 export const createShortenedIRILink = (iri, nsp, prefix, secondary) => {
-    return (
-      <InteractiveLink key={iri} iri={iri} color={secondary ? 'inherit' : 'primary'} target="_blank" href={iri}>
-        {iri.includes(nsp) ? `${prefix}:` : '' }<strong>{iri.replace(nsp, '')}</strong>
-      </InteractiveLink>
-    );
+  return (
+    <InteractiveLink key={iri} iri={iri} color={secondary ? 'inherit' : 'primary'} target="_blank" href={iri}>
+      {iri.includes(nsp) ? `${prefix}:` : ''}<strong>{iri.replace(nsp, '')}</strong>
+    </InteractiveLink>
+  );
 };
 
 export const getMatchedConceptMetadata = ({ highlight, prefixedName }) => {
@@ -101,4 +101,13 @@ export const getCamelCaseTokens = (str) => {
     return str.split('_').filter((str) => !!str);;
   }
   return str.replace(/([^A-Z])([A-Z])/g, '$1 $2').split(' ').filter((str) => !!str);;
+};
+
+export const downloadTextFile = (fileName, data) => {
+  const element = document.createElement('a');
+  const file = new Blob([data], { type: 'text/plain' });
+  element.href = URL.createObjectURL(file);
+  element.download = fileName;
+  document.body.appendChild(element); // Required for this to work in FireFox
+  element.click();
 };

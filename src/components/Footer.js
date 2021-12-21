@@ -7,6 +7,7 @@ import Divider from '@material-ui/core/Divider';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import Grid from '@material-ui/core/Grid';
 import CardMedia from '@material-ui/core/CardMedia';
+import * as packagejson from '../../package.json';
 
 function Copyright() {
   return (
@@ -61,22 +62,25 @@ export default function Footer(props) {
           <Grid item xs={2}></Grid>
         </Grid>
         <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
-              OReCaP - A tool based on <Link target="_blank" href="http://www.semantic-web-journal.net/content/focused-categorization-power-ontologies-general-framework-and-study-simple-existential">Focused Categorization Power of Ontologies</Link>
-            </Typography>
-            <Typography variant="subtitle2" align="center" color="textSecondary" component="p">
-              <GitHubIcon /> GitHub projects: <Link target="_blank" href="https://github.com/nvbach91/fcp-api">FCP API</Link> | <Link target="_blank" href="https://github.com/nvbach91/orecap">OReCaP</Link>
-            </Typography>
-            <Typography variant="subtitle2" align="center" color="textSecondary" component="p">
-              Powered by <Link target="_blank" href="https://lov.linkeddata.es/dataset/lov">Linked Open Vocabularies (LOV)</Link> and <Link target="_blank" href="https://github.com/owlcs/owlapi">OWL API 5</Link>
-            </Typography>
-            <Typography variant="body2" align="center" color="textSecondary" component="p">
-              This research is being supported by project no. 18-23964S of the Czech Science Foundation <br /> Focused categorization power of web ontologies
-            </Typography>
-            <CardMedia image={require('../assets/img/fcatpowo.png')} className={classes.media} />
-            <Typography variant="body2" align="center" color="textSecondary" component="p">
-              This work is licensed under a <Link target="_blank" href="https://opensource.org/licenses/MIT">MIT license</Link>
-            </Typography>
-            <Copyright />
+          OReCaP - A tool based on <Link target="_blank" href="http://www.semantic-web-journal.net/content/focused-categorization-power-ontologies-general-framework-and-study-simple-existential">Focused Categorization Power of Ontologies</Link>
+        </Typography>
+        <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
+          Version v{packagejson.version}
+        </Typography>
+        <Typography variant="subtitle2" align="center" color="textSecondary" component="p">
+          <GitHubIcon /> GitHub projects: <Link target="_blank" href="https://github.com/nvbach91/fcp-api">FCP API</Link> | <Link target="_blank" href="https://github.com/nvbach91/orecap">OReCaP</Link>
+        </Typography>
+        <Typography variant="subtitle2" align="center" color="textSecondary" component="p">
+          Powered by <Link target="_blank" href="https://lov.linkeddata.es/dataset/lov">Linked Open Vocabularies (LOV)</Link> and <Link target="_blank" href="https://github.com/owlcs/owlapi">OWL API 5</Link>
+        </Typography>
+        <Typography variant="body2" align="center" color="textSecondary" component="p">
+          This research is being supported by project no. 18-23964S of the Czech Science Foundation <br /> Focused categorization power of web ontologies
+        </Typography>
+        <CardMedia image={require('../assets/img/fcatpowo.png')} className={classes.media} />
+        <Typography variant="body2" align="center" color="textSecondary" component="p">
+          This work is licensed under a <Link target="_blank" href="https://opensource.org/licenses/MIT">MIT license</Link>
+        </Typography>
+        <Copyright />
       </Container>
     </footer>
   );

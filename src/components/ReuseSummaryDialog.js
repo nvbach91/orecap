@@ -6,13 +6,16 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Typography from '@material-ui/core/Typography';
-import { withMainContext } from '../context/MainContext';
 import CardContent from '@material-ui/core/CardContent';
 import Card from '@material-ui/core/Card';
 import Link from '@material-ui/core/Link';
-import { getCategoryTypes, createShortenedIRILink } from '../utils';
-import RecursiveTreeView from './RecursiveTreeView';
+import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Minimize from '@material-ui/icons/Minimize';
+import moment from 'moment';
+import { withMainContext } from '../context/MainContext';
+import { getCategoryTypes, createShortenedIRILink, downloadTextFile } from '../utils';
+import RecursiveTreeView from './RecursiveTreeView';
+import { Paper } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   section: {
@@ -50,7 +53,7 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
     getRecursiveCheckedNodeIds(id, data, checkedNodes, checkedNodeIds);
     // console.log(checkedNodeIds);
     checkedNodeIds.forEach((cnid) => {
-      if (checkedNodes[cnid]) {
+      if (checkedNodes[id]) {
         delete newCheckedNodes[cnid];
       } else {
         newCheckedNodes[cnid] = true;
@@ -80,9 +83,10 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
     // console.log(focusClasses);
     return Object.keys(focusClasses).map((focusClassIri) => {
       const data = {
-        id: focusClassIri,
+        id: `${focusClassIri} <focus class>`,
         name: createShortenedIRILink(focusClassIri, vocabData.nsp, vocabData.prefix),
         children: [],
+        type: '<focus class>',
         // children: [
         //   {
         //     id: '1',
@@ -173,10 +177,11 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
           default:
         }
       });
+      const checkedSubclassCount = Object.keys(t1Children).filter((cid) => !!checkedNodes[cid]).length;
       data.children.push({
-        id: `${data.id} <named sublasses>`,
+        id: `${data.id} <named subclasses>`,
         type: '<named subclasses>',
-        name: `subclasses (${Object.keys(t1Children).length})`,
+        name: `subclasses (${checkedSubclassCount}/${Object.keys(t1Children).length})`,
         children: Object.keys(t1Children).map((iri) => ({
           id: iri,
           name: createShortenedIRILink(iri, vocabData.nsp, vocabData.prefix),
@@ -208,15 +213,64 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
           children: groupedChildren[key].children
         }));
         let expressionCount = 0;
+        let checkedChildrenCount = 0;
+        // console.log(checkedNodes);
         item.children.forEach((c) => {
           expressionCount += !c.children ? 1 : c.children.length;
+          if (!c.children) {
+            checkedChildrenCount += checkedNodes[c.id] ? 1 : 0;
+          } else {
+            c.children.forEach((cc) => {
+              checkedChildrenCount += checkedNodes[cc.id] ? 1 : 0;
+            });
+          }
         });
-        item.name = [item.name, <span key="count">&nbsp;({expressionCount})</span>];
+        item.name = [
+          item.name,
+          <span key="count">&nbsp;({checkedChildrenCount}/{expressionCount})</span>
+        ];
         data.children.push(item);
       });
       // console.log(data);
-      return <RecursiveTreeView key={focusClassIri} data={data} onCheckNode={onCheckNode} checkedNodes={checkedNodes} defaultExpandedId={data.id} />
-    });
+      return (
+        <Paper elevation={1} key={focusClassIri} style={{ marginBottom: 10, padding: 10 }}>
+          <Button
+            endIcon={<CloudDownloadIcon />}
+            onClick={exportSelectedExpressions(focusClassIri)}
+            color="primary"
+          >
+            Export selected expressions (N-triples)
+          </Button>
+          <RecursiveTreeView data={data} onCheckNode={onCheckNode} checkedNodes={checkedNodes} defaultExpandedId={data.id} />
+        </Paper>
+      )
+    })
+  };
+  const exportSelectedExpressions = (subject) => () => {
+    // console.log(context);
+    const triples = Object.keys(checkedNodes)
+      .filter((e) => !/(<expressions>|<classes>|<individuals>|<named subclasses>|<focus class>)$/.test(e))
+      .map((e) => {
+        console.log(e);
+        let result = e
+          .replace('.<', ' <')
+          .replace('.{<', ' <')
+          .replace('>}', '>')
+          .replace('.owl:Thing', '<http://www.w3.org/2002/07/owl#Thing>');
+        if (result.endsWith('<http://www.w3.org/2002/07/owl#Thing>')) {
+          result = `<${subject}> <${result.replace('<http://www.w3.org/2002/07/owl#Thing>', '').trim()}> <http://www.w3.org/2002/07/owl#Thing>`
+        } else if (!/^<.+>$/.test(result) && !/> </.test(result)) {
+          result = `<${result}> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <${subject}>`;
+        } else {
+          result = `<${subject}> ${result}`;
+        }
+        return result;
+      });
+    
+    // console.log(triples.join(' .\n') + ' .');
+    const lastSeparatorIndex = subject.includes('#') ? subject.lastIndexOf('#') : subject.lastIndexOf('/');
+    const fileName = `fcp-${subject.slice(lastSeparatorIndex + 1)}-${moment().format('YYYYMMDD-HHmmss')}.n3`;
+    downloadTextFile(fileName, `${triples.join(' .\n')} .`);
   };
   return (
     <Dialog fullWidth={true} maxWidth="md" open={context.isReuseSummaryDialogOpen} onClose={() => context.setIsReuseSummaryDialogOpen(false)}>
