@@ -51,9 +51,10 @@ export default function Footer(props) {
             <Typography variant="body2" align="center" gutterBottom>
               The focus class is a class that you want to further partition by subcategories, using the discovered ontologies. 
               Enter a keyword (or, multiple synonymous ones) likely to appear in the name of the focus class, and possibly some additional keywords (for finer ranking). 
-              Then you will be able to calculate the FCP – the focus categorization power (as a specific quality measure) - of each discovered ontology, 
-              respective to the selected focus class, and view the subcategories the ontology offers – including the subcategories that are not named classes but 
-              compound concept expressions. Finally, you can save each relevant ontology to a list, and eventually view the list as ranked by the overall FCP values.
+              Then you will be able to calculate the FCP - the focus categorization power (as a specific quality measure) - of each discovered ontology, 
+              respective to the selected focus class, and view the subcategories the ontology offers - including the subcategories that are not named classes but 
+              compound concept expressions. Finally, you can save each relevant ontology to a list, view the list as ranked by the overall FCP values, select expressions for
+              re-use and export them as N-triples.
             </Typography>
             <br />
             <Divider />
