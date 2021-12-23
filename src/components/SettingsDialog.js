@@ -10,9 +10,10 @@ import Slider from '@material-ui/core/Slider';
 import Input from '@material-ui/core/Input';
 import EqualizerIcon from '@material-ui/icons/Equalizer';
 import Typography from '@material-ui/core/Typography';
-import { withMainContext } from '../context/MainContext';
 import CardContent from '@material-ui/core/CardContent';
 import Card from '@material-ui/core/Card';
+import { TextField } from '@material-ui/core';
+import { withMainContext } from '../context/MainContext';
 
 const useStyles = makeStyles((theme) => ({
   settingSection: {
@@ -57,6 +58,30 @@ const SettingsDialog = withMainContext(({ context, selectedVocabPrefix }) => {
             </CardContent>
           </Card>
         ))}
+        <Card className={classes.settingSection}>
+          <CardContent>
+            <Typography variant="h6">Generated class namespace (used for generating classes from FCP expressions)</Typography>
+            <TextField
+              fullWidth
+              value={context.generatedClassNamespace}
+              onChange={(e) => {
+                localStorage.setItem('generatedClassNamespace', e.target.value.trim());
+                context.setGeneratedClassNamespace(localStorage.getItem('generatedClassNamespace'))
+              }}
+            />
+          </CardContent>
+          <CardContent>
+            <Typography variant="h6">Generated class prefix (used for generating classes from FCP expressions)</Typography>
+            <TextField
+              fullWidth
+              value={context.generatedClassPrefix}
+              onChange={(e) => {
+                localStorage.setItem('generatedClassPrefix', e.target.value.trim());
+                context.setGeneratedClassPrefix(localStorage.getItem('generatedClassPrefix'))
+              }}
+            />
+          </CardContent>
+        </Card>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleResetCategoryTypeWeightValues} color="primary">Reset values to default</Button>

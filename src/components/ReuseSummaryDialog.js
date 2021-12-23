@@ -13,9 +13,10 @@ import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Minimize from '@material-ui/icons/Minimize';
 import moment from 'moment';
 import { withMainContext } from '../context/MainContext';
-import { getCategoryTypes, createShortenedIRILink, downloadTextFile } from '../utils';
+import { getCategoryTypes, createShortenedIRILink, downloadTextFile, extractEntityName } from '../utils';
 import RecursiveTreeView from './RecursiveTreeView';
 import { Paper } from '@material-ui/core';
+import { OWL_EQUIVALENTCLASS, OWL_EQUIVALENTPROPERTY, OWL_THING, RDFS_SUBCLASSOF } from '../config';
 
 const useStyles = makeStyles((theme) => ({
   section: {
@@ -238,6 +239,7 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
             endIcon={<CloudDownloadIcon />}
             onClick={exportSelectedExpressions(focusClassIri)}
             color="primary"
+            variant="contained"
           >
             Export selected expressions (N-triples)
           </Button>
@@ -248,28 +250,45 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
   };
   const exportSelectedExpressions = (subject) => () => {
     // console.log(context);
-    const triples = Object.keys(checkedNodes)
-      .filter((e) => !/(<expressions>|<classes>|<individuals>|<named subclasses>|<focus class>)$/.test(e))
-      .map((e) => {
-        console.log(e);
-        let result = e
-          .replace('.<', ' <')
-          .replace('.{<', ' <')
-          .replace('>}', '>')
-          .replace('.owl:Thing', '<http://www.w3.org/2002/07/owl#Thing>');
-        if (result.endsWith('<http://www.w3.org/2002/07/owl#Thing>')) {
-          result = `<${subject}> <${result.replace('<http://www.w3.org/2002/07/owl#Thing>', '').trim()}> <http://www.w3.org/2002/07/owl#Thing>`
-        } else if (!/^<.+>$/.test(result) && !/> </.test(result)) {
-          result = `<${result}> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <${subject}>`;
-        } else {
-          result = `<${subject}> ${result}`;
-        }
-        return result;
-      });
+    let triples = Object.keys(checkedNodes)
+      .filter((e) => !/(<expressions>|<classes>|<individuals>|<named subclasses>|<focus class>)$/.test(e));
+    if (!triples.length) {
+      return context.setSnackBarContent({ msg: 'Please select at least one expression for export', color: 'error' });
+    }
+    
+    const subjectName = extractEntityName(subject);
+    triples = triples.map((e) => {
+      // console.log(e);
+      let result = e
+        .replace('.<', ' <')
+        .replace('.{<', ' <')
+        .replace('>}', '>')
+        .replace('.owl:Thing', `<${OWL_THING}>`);
+      const contextName = `${context.generatedClassNamespace}${subjectName}Having`;
+      if (result.endsWith(`<${OWL_THING}>`)) { // category pattern c2
+        const entity = result.replace(`<${OWL_THING}>`, '').trim();
+        const entityName = extractEntityName(entity);
+        result = [
+          `<${contextName}${entityName}> <${RDFS_SUBCLASSOF}> <${subject}>`,
+          `<${contextName}${entityName}> <${OWL_EQUIVALENTPROPERTY}> <${entity}>`,
+        ].join(' .\n');
+      } else if (!/^<.+>$/.test(result) && !/> </.test(result)) { // category pattern c1
+        result = `<${result}> <${RDFS_SUBCLASSOF}> <${subject}>`;
+      } else { // category pattern c3+c4
+        const [predicate, object] = result.split('> <').map((p, i) => `${i === 1 ? '<' : ''}${p}${i === 0 ? '>' : ''}`);
+        const predicateName = extractEntityName(predicate.slice(1, -1));
+        const objectName = extractEntityName(object.slice(1, -1));
+        result = [
+          `<${contextName}${predicateName}${objectName}> <${RDFS_SUBCLASSOF}> <${subject}>`,
+          `<${contextName}${predicateName}${objectName}> <${OWL_EQUIVALENTPROPERTY}> ${predicate}`,
+          `<${contextName}${predicateName}${objectName}> <${OWL_EQUIVALENTCLASS}> ${object}`,
+        ].join(' .\n');
+      }
+      return result;
+    });
     
     // console.log(triples.join(' .\n') + ' .');
-    const lastSeparatorIndex = subject.includes('#') ? subject.lastIndexOf('#') : subject.lastIndexOf('/');
-    const fileName = `fcp-${subject.slice(lastSeparatorIndex + 1)}-${moment().format('YYYYMMDD-HHmmss')}.n3`;
+    const fileName = `fcp-${subjectName}-${moment().format('YYYYMMDD-HHmmss')}.n3`;
     downloadTextFile(fileName, `${triples.join(' .\n')} .`);
   };
   return (

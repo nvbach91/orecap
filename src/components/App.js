@@ -287,9 +287,11 @@ const App = withMainContext(({ context }) => {
       <SettingsDialog selectedVocabPrefix={selectedVocabPrefix} />
       <SavedOntologiesDialog setSelectedVocabPrefix={setSelectedVocabPrefix} />
       <ReuseSummaryDialog />
-      <Snackbar open={!!context.snackBarContent} autoHideDuration={5000} onClose={() => context.setSnackBarContent('')}>
-        <Alert onClose={() => context.setSnackBarContent('')} severity="success">{context.snackBarContent}</Alert>
-      </Snackbar>
+      {!!context.snackBarContent && (
+        <Snackbar open autoHideDuration={5000} onClose={() => context.setSnackBarContent(null)}>
+          <Alert onClose={() => context.setSnackBarContent(null)} severity={context.snackBarContent.color}>{context.snackBarContent.msg}</Alert>
+        </Snackbar>
+      )}
     </React.Fragment>
   );
 });

@@ -111,3 +111,9 @@ export const downloadTextFile = (fileName, data) => {
   document.body.appendChild(element); // Required for this to work in FireFox
   element.click();
 };
+
+export const extractEntityName = (iri) => {
+  const lastSubjectSeparatorIndex = iri.includes('#') ? iri.lastIndexOf('#') : iri.lastIndexOf('/');
+  const name = iri.slice(lastSubjectSeparatorIndex + 1);
+  return `${name.slice(0, 1).toUpperCase()}${name.slice(1)}`;
+};

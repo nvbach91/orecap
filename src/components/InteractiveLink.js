@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Link from '@material-ui/core/Link';
 import axios from 'axios';
 
+import { PREFIXES } from '../config';
+
 const axiosConfig = {
   headers: {
     "accept": "application/sparql-results+json,*/*;q=0.9",
@@ -10,20 +12,6 @@ const axiosConfig = {
   }
 };
 
-
-const prefixes = {
-  vann: 'http://purl.org/vocab/vann/',
-  voaf: 'http://purl.org/vocommons/voaf#',
-  rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
-  owl: 'http://www.w3.org/2002/07/owl#',
-  skos: 'http://www.w3.org/2004/02/skos/core#',
-  rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-  dcterms: 'http://purl.org/dc/terms/',
-  dc: 'http://purl.org/dc/elements/1.1/',
-  dcmit: 'http://purl.org/dc/dcmitype/',
-};
-
-const PREFIXES = Object.keys(prefixes).map((prefix) => `PREFIX ${prefix}: <${prefixes[prefix]}>`).join('\n') + '\n';
 
 const getEntityLabelQuery = (iri) => `
 SELECT ?label WHERE {

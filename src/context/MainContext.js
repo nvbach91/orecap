@@ -7,7 +7,9 @@ export function MainContextProvider({ children }) {
   const [savedOntologies, setSavedOntologies] = useState({});
   const [isSavedOntologiesDialogOpen, setIsSavedOntologiesDialogOpen] = useState(false);
   const [isReuseSummaryDialogOpen, setIsReuseSummaryDialogOpen] = useState(false);
-  const [snackBarContent, setSnackBarContent] = useState('');
+  const [snackBarContent, setSnackBarContent] = useState(null);
+  const [generatedClassPrefix, setGeneratedClassPrefix] = useState(localStorage.getItem('generatedClassPrefix') || 'fcp');
+  const [generatedClassNamespace, setGeneratedClassNamespace] = useState(localStorage.getItem('generatedClassNamespace') || 'http://fcp.vse.cz/ontology/');
   const [categoryTypeWeightValues, setCategoryTypeWeightValues] = useState(
     JSON.parse(localStorage.getItem('categoryTypeWeightValues') || JSON.stringify(defaultCategoryTypeWeightValues))
   );
@@ -65,6 +67,10 @@ export function MainContextProvider({ children }) {
     setIsSavedOntologiesDialogOpen,
     isReuseSummaryDialogOpen,
     setIsReuseSummaryDialogOpen,
+    generatedClassPrefix,
+    setGeneratedClassPrefix,
+    generatedClassNamespace,
+    setGeneratedClassNamespace,
   });
   return (
     <MainContext.Provider value={getValues()}>
