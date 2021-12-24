@@ -8,15 +8,19 @@ import DialogContent from '@material-ui/core/DialogContent';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import Card from '@material-ui/core/Card';
+import Paper from '@material-ui/core/Paper';
 import Link from '@material-ui/core/Link';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import Minimize from '@material-ui/icons/Minimize';
 import moment from 'moment';
+import { v4 as uuidv4 } from 'uuid';
 import { withMainContext } from '../context/MainContext';
 import { getCategoryTypes, createShortenedIRILink, downloadTextFile, extractEntityName } from '../utils';
 import RecursiveTreeView from './RecursiveTreeView';
-import { Paper } from '@material-ui/core';
-import { OWL_EQUIVALENTCLASS, OWL_EQUIVALENTPROPERTY, OWL_THING, RDFS_SUBCLASSOF } from '../config';
+import { OWL_EQUIVALENTCLASS, OWL_ONPROPERTY, OWL_RESTRICTION, OWL_SOMEVALUESFROM, OWL_THING } from '../config';
+import { RDFS_SUBCLASSOF, RDF_TYPE } from '../config';
+
+const shortUUID = () => uuidv4().slice(-12);
 
 const useStyles = makeStyles((theme) => ({
   section: {
@@ -266,11 +270,14 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
         .replace('.owl:Thing', `<${OWL_THING}>`);
       const contextName = `${context.generatedClassNamespace}${subjectName}Having`;
       if (result.endsWith(`<${OWL_THING}>`)) { // category pattern c2
-        const entity = result.replace(`<${OWL_THING}>`, '').trim();
-        const entityName = extractEntityName(entity);
-        result = [
-          `<${contextName}${entityName}> <${RDFS_SUBCLASSOF}> <${subject}>`,
-          `<${contextName}${entityName}> <${OWL_EQUIVALENTPROPERTY}> <${entity}>`,
+        const property = result.replace(`<${OWL_THING}>`, '').trim();
+        const propertyName = extractEntityName(property);
+        const anonymousEntity = `_:${shortUUID()}`;
+        result = '\n' + [
+          `<${contextName}${propertyName}> <${OWL_EQUIVALENTCLASS}> ${anonymousEntity}`,
+          `${anonymousEntity} <${RDF_TYPE}> <${OWL_RESTRICTION}>`,
+          `${anonymousEntity} <${OWL_ONPROPERTY}> <${property}>`,
+          `${anonymousEntity} <${OWL_SOMEVALUESFROM}> <${OWL_THING}>`,
         ].join(' .\n');
       } else if (!/^<.+>$/.test(result) && !/> </.test(result)) { // category pattern c1
         result = `<${result}> <${RDFS_SUBCLASSOF}> <${subject}>`;
@@ -278,10 +285,12 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
         const [predicate, object] = result.split('> <').map((p, i) => `${i === 1 ? '<' : ''}${p}${i === 0 ? '>' : ''}`);
         const predicateName = extractEntityName(predicate.slice(1, -1));
         const objectName = extractEntityName(object.slice(1, -1));
-        result = [
-          `<${contextName}${predicateName}${objectName}> <${RDFS_SUBCLASSOF}> <${subject}>`,
-          `<${contextName}${predicateName}${objectName}> <${OWL_EQUIVALENTPROPERTY}> ${predicate}`,
-          `<${contextName}${predicateName}${objectName}> <${OWL_EQUIVALENTCLASS}> ${object}`,
+        const anonymousEntity = `_:${shortUUID()}`;
+        result = '\n' + [
+          `<${contextName}${predicateName}${objectName}> <${OWL_EQUIVALENTCLASS}> ${anonymousEntity}`,
+          `${anonymousEntity} <${RDF_TYPE}> <${OWL_RESTRICTION}>`,
+          `${anonymousEntity} <${OWL_ONPROPERTY}> ${predicate}`,
+          `${anonymousEntity} <${OWL_SOMEVALUESFROM}> ${object}`,
         ].join(' .\n');
       }
       return result;
