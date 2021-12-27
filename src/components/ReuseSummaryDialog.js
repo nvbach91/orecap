@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { withMainContext } from '../context/MainContext';
 import { getCategoryTypes, createShortenedIRILink, downloadTextFile, extractEntityName } from '../utils';
 import RecursiveTreeView from './RecursiveTreeView';
-import { OWL_EQUIVALENTCLASS, OWL_ONPROPERTY, OWL_RESTRICTION, OWL_SOMEVALUESFROM, OWL_THING } from '../config';
+import { OWL_EQUIVALENTCLASS, OWL_ONPROPERTY, OWL_RESTRICTION, OWL_SOMEVALUESFROM, OWL_HASVALUE, OWL_THING } from '../config';
 import { RDFS_SUBCLASSOF, RDF_TYPE } from '../config';
 
 const shortUUID = () => uuidv4().slice(-12);
@@ -263,10 +263,17 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
     const subjectName = extractEntityName(subject);
     triples = triples.map((e) => {
       // console.log(e);
+      let categoryPattern = 'c1';
+      if (e.includes('.owl:Thing')) {
+        categoryPattern = 'c2';
+      } else if (e.includes('.<')) {
+        categoryPattern = 'c3';
+      } else if (e.includes('.{<') && e.includes('>}')) {
+        categoryPattern = 'c4';
+      }
       let result = e
         .replace('.<', ' <')
-        .replace('.{<', ' <')
-        .replace('>}', '>')
+        .replace('.{<', ' <').replace('>}', '>')
         .replace('.owl:Thing', `<${OWL_THING}>`);
       const contextName = `${context.generatedClassNamespace}${subjectName}Having`;
       if (result.endsWith(`<${OWL_THING}>`)) { // category pattern c2
@@ -290,7 +297,7 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
           `<${contextName}${predicateName}${objectName}> <${OWL_EQUIVALENTCLASS}> ${anonymousEntity}`,
           `${anonymousEntity} <${RDF_TYPE}> <${OWL_RESTRICTION}>`,
           `${anonymousEntity} <${OWL_ONPROPERTY}> ${predicate}`,
-          `${anonymousEntity} <${OWL_SOMEVALUESFROM}> ${object}`,
+          `${anonymousEntity} <${categoryPattern === 'c3' ? OWL_SOMEVALUESFROM : OWL_HASVALUE}> ${object}`,
         ].join(' .\n');
       }
       return result;

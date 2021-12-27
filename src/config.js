@@ -10,6 +10,7 @@ export const OWL_EQUIVALENTCLASS = 'http://www.w3.org/2002/07/owl#equivalentClas
 export const OWL_EQUIVALENTPROPERTY = 'http://www.w3.org/2002/07/owl#equivalentProperty';
 export const OWL_ONPROPERTY = 'http://www.w3.org/2002/07/owl#onProperty';
 export const OWL_SOMEVALUESFROM = 'http://www.w3.org/2002/07/owl#someValuesFrom';
+export const OWL_HASVALUE = 'http://www.w3.org/2002/07/owl#hasValue';
 // export const fcpApiUrl = window.location.host.includes('localhost') ? 'http://localhost:8080/fcp' : 'https://fcp.vse.cz/fcpapi/fcp';
 export const prefixes = {
   vann: 'http://purl.org/vocab/vann/',
