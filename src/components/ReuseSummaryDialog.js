@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { withMainContext } from '../context/MainContext';
 import { getCategoryTypes, createShortenedIRILink, downloadTextFile, extractEntityName } from '../utils';
 import RecursiveTreeView from './RecursiveTreeView';
-import { OWL_EQUIVALENTCLASS, OWL_ONPROPERTY, OWL_RESTRICTION, OWL_SOMEVALUESFROM, OWL_HASVALUE, OWL_THING } from '../config';
+import { OWL_EQUIVALENTCLASS, OWL_ONPROPERTY, OWL_RESTRICTION, OWL_SOMEVALUESFROM, OWL_HASVALUE, OWL_THING, OWL_INTERSECTIONOF, RDF_FIRST, RDF_REST, RDF_NIL } from '../config';
 import { RDFS_SUBCLASSOF, RDF_TYPE } from '../config';
 
 const shortUUID = () => uuidv4().slice(-12);
@@ -51,7 +51,7 @@ const getRecursiveCheckedNodeIds = (id, data, checkedNodes, checkedNodeIds) => {
 
 const ReuseSummaryDialog = withMainContext(({ context }) => {
   const classes = useStyles();
-  const [checkedNodes, setCheckedNodes] = useState({});
+  const checkedNodes = context.checkedNodes;
   const onCheckNode = (id, data) => {
     const newCheckedNodes = { ...checkedNodes };
     const checkedNodeIds = [];
@@ -64,7 +64,7 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
         newCheckedNodes[cnid] = true;
       }
     });
-    setCheckedNodes(newCheckedNodes);
+    context.setCheckedNodes(newCheckedNodes);
   };
   const renderReuseTree = ({ fcpData, vocabDownloadUrl, vocabData }) => {
     const categoryTypes = getCategoryTypes({ fcpData, vocabDownloadUrl, vocabData });
@@ -276,15 +276,23 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
         .replace('.{<', ' <').replace('>}', '>')
         .replace('.owl:Thing', `<${OWL_THING}>`);
       const contextName = `${context.generatedClassNamespace}${subjectName}Having`;
+      const anonymousEntity1 = `_:${shortUUID()}`;
+      const anonymousEntity2 = `_:${shortUUID()}`;
+      const anonymousEntity3 = `_:${shortUUID()}`;
+      const anonymousEntity4 = `_:${shortUUID()}`;
       if (result.endsWith(`<${OWL_THING}>`)) { // category pattern c2
         const property = result.replace(`<${OWL_THING}>`, '').trim();
         const propertyName = extractEntityName(property);
-        const anonymousEntity = `_:${shortUUID()}`;
         result = '\n' + [
-          `<${contextName}${propertyName}> <${OWL_EQUIVALENTCLASS}> ${anonymousEntity}`,
-          `${anonymousEntity} <${RDF_TYPE}> <${OWL_RESTRICTION}>`,
-          `${anonymousEntity} <${OWL_ONPROPERTY}> <${property}>`,
-          `${anonymousEntity} <${OWL_SOMEVALUESFROM}> <${OWL_THING}>`,
+          `<${contextName}${propertyName}> <${OWL_EQUIVALENTCLASS}> ${anonymousEntity1}`,
+          `${anonymousEntity1} <${OWL_INTERSECTIONOF}> ${anonymousEntity2}`,
+          `${anonymousEntity2} <${RDF_FIRST}> <${subject}>`,
+          `${anonymousEntity2} <${RDF_REST}> ${anonymousEntity3}`,
+          `${anonymousEntity3} <${RDF_FIRST}> ${anonymousEntity4}`,
+          `${anonymousEntity3} <${RDF_REST}> <${RDF_NIL}>`,
+          `${anonymousEntity4} <${RDF_TYPE}> <${OWL_RESTRICTION}>`,
+          `${anonymousEntity4} <${OWL_ONPROPERTY}> <${property}>`,
+          `${anonymousEntity4} <${OWL_SOMEVALUESFROM}> <${OWL_THING}>`,
         ].join(' .\n');
       } else if (!/^<.+>$/.test(result) && !/> </.test(result)) { // category pattern c1
         result = `<${result}> <${RDFS_SUBCLASSOF}> <${subject}>`;
@@ -292,12 +300,16 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
         const [predicate, object] = result.split('> <').map((p, i) => `${i === 1 ? '<' : ''}${p}${i === 0 ? '>' : ''}`);
         const predicateName = extractEntityName(predicate.slice(1, -1));
         const objectName = extractEntityName(object.slice(1, -1));
-        const anonymousEntity = `_:${shortUUID()}`;
         result = '\n' + [
-          `<${contextName}${predicateName}${objectName}> <${OWL_EQUIVALENTCLASS}> ${anonymousEntity}`,
-          `${anonymousEntity} <${RDF_TYPE}> <${OWL_RESTRICTION}>`,
-          `${anonymousEntity} <${OWL_ONPROPERTY}> ${predicate}`,
-          `${anonymousEntity} <${categoryPattern === 'c3' ? OWL_SOMEVALUESFROM : OWL_HASVALUE}> ${object}`,
+          `<${contextName}${predicateName}${objectName}> <${OWL_EQUIVALENTCLASS}> ${anonymousEntity1}`,
+          `${anonymousEntity1} <${OWL_INTERSECTIONOF}> ${anonymousEntity2}`,
+          `${anonymousEntity2} <${RDF_FIRST}> <${subject}>`,
+          `${anonymousEntity2} <${RDF_REST}> ${anonymousEntity3}`,
+          `${anonymousEntity3} <${RDF_FIRST}> ${anonymousEntity4}`,
+          `${anonymousEntity3} <${RDF_REST}> <${RDF_NIL}>`,
+          `${anonymousEntity4} <${RDF_TYPE}> <${OWL_RESTRICTION}>`,
+          `${anonymousEntity4} <${OWL_ONPROPERTY}> ${predicate}`,
+          `${anonymousEntity4} <${categoryPattern === 'c3' ? OWL_SOMEVALUESFROM : OWL_HASVALUE}> ${object}`,
         ].join(' .\n');
       }
       return result;

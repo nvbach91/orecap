@@ -13,6 +13,7 @@ export function MainContextProvider({ children }) {
   const [categoryTypeWeightValues, setCategoryTypeWeightValues] = useState(
     JSON.parse(localStorage.getItem('categoryTypeWeightValues') || JSON.stringify(defaultCategoryTypeWeightValues))
   );
+  const [checkedNodes, setCheckedNodes] = useState({});
   const changeCategoryTypeWeightValue = (index, newValue, selectedVocabPrefix) => {
     if (!savedOntologies[selectedVocabPrefix]) {
       const newValues = [...categoryTypeWeightValues];
@@ -50,27 +51,18 @@ export function MainContextProvider({ children }) {
   };
   const resetSavedOntologies = () => {
     setSavedOntologies({});
+    setCheckedNodes({});
   };
   const getValues = () => ({
-    categoryTypeWeightValues,
-    changeCategoryTypeWeightValue,
-    resetCategoryTypeWeightValues,
-    snackBarContent,
-    setSnackBarContent,
-    isSettingsDialogOpen,
-    setIsSettingsDialogOpen,
-    savedOntologies,
-    addSavedOntology,
-    removeSavedOntology,
-    resetSavedOntologies,
-    isSavedOntologiesDialogOpen,
-    setIsSavedOntologiesDialogOpen,
-    isReuseSummaryDialogOpen,
-    setIsReuseSummaryDialogOpen,
-    generatedClassPrefix,
-    setGeneratedClassPrefix,
-    generatedClassNamespace,
-    setGeneratedClassNamespace,
+    categoryTypeWeightValues, changeCategoryTypeWeightValue, resetCategoryTypeWeightValues,
+    snackBarContent, setSnackBarContent,
+    isSettingsDialogOpen, setIsSettingsDialogOpen,
+    savedOntologies, addSavedOntology, removeSavedOntology, resetSavedOntologies,
+    isSavedOntologiesDialogOpen, setIsSavedOntologiesDialogOpen,
+    isReuseSummaryDialogOpen, setIsReuseSummaryDialogOpen,
+    generatedClassPrefix, setGeneratedClassPrefix,
+    generatedClassNamespace, setGeneratedClassNamespace,
+    checkedNodes, setCheckedNodes,
   });
   return (
     <MainContext.Provider value={getValues()}>
