@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { withMainContext } from '../context/MainContext';
 import { getCategoryTypes, createShortenedIRILink, downloadTextFile, extractEntityName } from '../utils';
 import RecursiveTreeView from './RecursiveTreeView';
-import { OWL_EQUIVALENTCLASS, OWL_ONPROPERTY, OWL_RESTRICTION, OWL_SOMEVALUESFROM, OWL_HASVALUE, OWL_THING, OWL_INTERSECTIONOF, RDF_FIRST, RDF_REST, RDF_NIL } from '../config';
+import { OWL_EQUIVALENTCLASS, OWL_ONPROPERTY, OWL_RESTRICTION, OWL_SOMEVALUESFROM, OWL_HASVALUE, OWL_THING, OWL_INTERSECTIONOF, RDF_FIRST, RDF_REST, RDF_NIL, OWL_CLASS, OWL_NAMEDINDIVIDUAL } from '../config';
 import { RDFS_SUBCLASSOF, RDF_TYPE } from '../config';
 
 const shortUUID = () => uuidv4().slice(-12);
@@ -261,6 +261,7 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
     }
     
     const subjectName = extractEntityName(subject);
+    const objectTypes = {};
     triples = triples.map((e) => {
       // console.log(e);
       let categoryPattern = 'c1';
@@ -284,6 +285,7 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
         const property = result.replace(`<${OWL_THING}>`, '').trim();
         const propertyName = extractEntityName(property);
         result = '\n' + [
+          `<${contextName}${propertyName}> <${RDF_TYPE}> <${OWL_CLASS}>`,
           `<${contextName}${propertyName}> <${OWL_EQUIVALENTCLASS}> ${anonymousEntity1}`,
           `${anonymousEntity1} <${OWL_INTERSECTIONOF}> ${anonymousEntity2}`,
           `${anonymousEntity2} <${RDF_FIRST}> <${subject}>`,
@@ -295,12 +297,16 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
           `${anonymousEntity4} <${OWL_SOMEVALUESFROM}> <${OWL_THING}>`,
         ].join(' .\n');
       } else if (!/^<.+>$/.test(result) && !/> </.test(result)) { // category pattern c1
-        result = `<${result}> <${RDFS_SUBCLASSOF}> <${subject}>`;
+        result = [
+          `<${result}> <${RDF_TYPE}> <${OWL_CLASS}>`,
+          `<${result}> <${RDFS_SUBCLASSOF}> <${subject}>`
+        ].join(' .\n');
       } else { // category pattern c3+c4
         const [predicate, object] = result.split('> <').map((p, i) => `${i === 1 ? '<' : ''}${p}${i === 0 ? '>' : ''}`);
         const predicateName = extractEntityName(predicate.slice(1, -1));
         const objectName = extractEntityName(object.slice(1, -1));
         result = '\n' + [
+          `<${contextName}${predicateName}${objectName}> <${RDF_TYPE}> <${OWL_CLASS}>`,
           `<${contextName}${predicateName}${objectName}> <${OWL_EQUIVALENTCLASS}> ${anonymousEntity1}`,
           `${anonymousEntity1} <${OWL_INTERSECTIONOF}> ${anonymousEntity2}`,
           `${anonymousEntity2} <${RDF_FIRST}> <${subject}>`,
@@ -311,13 +317,22 @@ const ReuseSummaryDialog = withMainContext(({ context }) => {
           `${anonymousEntity4} <${OWL_ONPROPERTY}> ${predicate}`,
           `${anonymousEntity4} <${categoryPattern === 'c3' ? OWL_SOMEVALUESFROM : OWL_HASVALUE}> ${object}`,
         ].join(' .\n');
+        objectTypes[object] = `<${RDF_TYPE}> <${categoryPattern === 'c3' ? OWL_CLASS : OWL_NAMEDINDIVIDUAL}>`;
       }
       return result;
     });
+
+    triples = [
+      `<${subject}> <${RDF_TYPE}> <${OWL_CLASS}>`,
+      '',
+      ...Object.keys(objectTypes).map((o) => `${o} ${objectTypes[o]}`),
+      '',
+      ...triples,
+    ];
     
     // console.log(triples.join(' .\n') + ' .');
     const fileName = `fcp-${subjectName}-${moment().format('YYYYMMDD-HHmmss')}.n3`;
-    downloadTextFile(fileName, `${triples.join(' .\n')} .`);
+    downloadTextFile(fileName, triples.map((t) => t ? `${t} .\n` : '\n').join(''));
   };
   return (
     <Dialog fullWidth={true} maxWidth="md" open={context.isReuseSummaryDialogOpen} onClose={() => context.setIsReuseSummaryDialogOpen(false)}>
