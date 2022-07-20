@@ -1,5 +1,6 @@
 export const dateFormat = 'DD MMMM YYYY'
 export const lovApiBaseUrl = 'https://lov.linkeddata.es/dataset/lov';
+export const nSearchResults = 100;
 export const rdfIconUrl = 'https://www.w3.org/RDF/icons/rdf_w3c.svg';
 export const fcpApiUrl = 'https://fcp.vse.cz/fcpapi/fcp';
 export const RDFS_SUBCLASSOF = 'http://www.w3.org/2000/01/rdf-schema#subClassOf';

@@ -13,7 +13,7 @@ import Footer from './Footer';
 import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import axios from 'axios';
-import { lovApiBaseUrl } from '../config';
+import { lovApiBaseUrl, nSearchResults } from '../config';
 import SettingsDialog from './SettingsDialog';
 import VocabSearchResult from './VocabSearchResult';
 import SavedOntologiesDialog from './SavedOntologiesDialog';
@@ -80,7 +80,7 @@ const App = withMainContext(({ context }) => {
       if (!keyword) {
         continue;
       }
-      const keywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?type=class&q=${keyword}`);
+      const keywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?page_size=${nSearchResults}&type=class&q=${keyword}`);
       keywordResp.data.results.filter((result) => {
         const hasPrefixedName = result.prefixedName && result.prefixedName.length && result.prefixedName[0].includes(':');
         const keywordMatchesPrefixedNameCamelCaseTokens =
@@ -127,7 +127,7 @@ const App = withMainContext(({ context }) => {
     const focusedKeywords = [...new Set(focusedSearchQuery.trim().split(/[\s,]+/))];
     const fmc = {};
     for (let i = 0; i < focusedKeywords.length; i++) {
-      const focusedKeywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?type=class&q=${focusedKeywords[i]}`);
+      const focusedKeywordResp = await axios.get(`${lovApiBaseUrl}/api/v2/term/search?page_size=${nSearchResults}&type=class&q=${focusedKeywords[i]}`);
       focusedKeywordResp.data.results.forEach((result) => {
         const prefixedName = result.prefixedName.join('');
         const highlight = result.highlight;
